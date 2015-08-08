@@ -1,0 +1,13 @@
+include_rules
+
+LIBS += \
+-lboost_program_options\
+-lboost_system\
+-lboost_filesystem\
+-lboost_thread\
+-lpthread\
+-lcrypto\
+-lmongoclient
+
+: foreach *.cpp |> !ccp |> {objs}
+: {objs} |> !lib |>
