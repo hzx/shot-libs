@@ -160,6 +160,7 @@ public:
 class Anchor: public Node {
 public:
   Anchor();
+  shot::String name;
 };
 
 
