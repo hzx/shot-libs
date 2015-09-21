@@ -7,13 +7,6 @@
 #include "shot/Model.h"
 #include "shot/values.h"
 
-using std::string;
-using std::vector;
-using std::unique_ptr;
-using namespace bson;
-using shot::Int;
-using shot::Float;
-using shot::String;
 
 namespace journal {
 
@@ -21,30 +14,32 @@ namespace journal {
 class Node;
 
 
-enum NodeType {
-  NT_NONE = 0,
-  NT_BLOCK,
-  NT_H1,
-  NT_H2,
-  NT_TEXT,
-  NT_CODE,
-  NT_LINK,
-  NT_VIDEO,
-  NT_GOOGLE_MAP,
-  NT_FILE,
-  NT_IMAGE,
-  NT_GALLERY,
-  NT_BIG_SLIDER,
-  NT_MINI_SLIDER,
+enum class NodeType {
+  None = 0,
+  Block,
+  H1,
+  H2,
+  Text,
+  Code,
+  Link,
+  Video,
+  GoogleMap,
+  File,
+  Image,
+  Gallery,
+  BigSlider,
+  MiniSlider,
+  Anchor,
+  Break,
 };
 
 
 class Journal {
 public:
-  String id;
-  String name;
-  String slug;
-  vector<string> items;
+  shot::String id;
+  shot::String name;
+  shot::String slug;
+  std::vector<std::string> items;
 };
 typedef std::unique_ptr<Journal> JournalPtr;
 
@@ -52,20 +47,17 @@ typedef std::unique_ptr<Journal> JournalPtr;
 class JournalItems {
 public:
   ~JournalItems();
-  vector<Node*> nodes;
+  std::vector<Node*> nodes;
 };
   
 
-class Props {
-public:
-};
-
-
 class Node {
 public:
-  String id;
-  int code;
-  Props props;
+  shot::String id;
+  NodeType code;
+  shot::String styleClass;
+  shot::String padding;
+  shot::String margin;
 };
 
 
@@ -73,28 +65,28 @@ class Block: public Node {
 public:
   Block();
   ~Block();
-  vector<Node*> nodes;
+  std::vector<Node*> nodes;
 };
 
 
 class Code: public Node {
 public:
   Code();
-  String value;
+  shot::String value;
 };
 
 
 class Text: public Node {
 public:
   Text();
-  String value;
+  shot::String value;
 };
 
 
 class Header1: public Node {
 public:
   Header1();
-  String value;
+  shot::String value;
 };
 
 
@@ -107,135 +99,149 @@ public:
 class Link: public Node {
 public:
   Link();
-  String source;
-  String text;
+  shot::String source;
+  shot::String text;
 };
 
 
 class Video: public Node {
 public:
   Video();
-  String source;
+  shot::String source;
 };
 
 
 class GoogleMap: public Node {
 public:
   GoogleMap();
-  Int zoom;
-  Float lat;
-  Float lng;
-  String icon;
+  shot::Int zoom;
+  shot::Float lat;
+  shot::Float lng;
+  shot::String icon;
 };
 
 
 class File: public Node {
 public:
   File();
-  String filename;
-  String text;
+  shot::String filename;
+  shot::String text;
 };
 
 
 class Image: public Node {
 public:
   Image();
-  String filename;
+  shot::String filename;
 };
 
 
 class Gallery: public Node {
 public:
   Gallery();
-  vector<string> images;
+  std::vector<std::string> images;
 };
+
 
 class BigSlider: public Node {
 public:
   BigSlider();
-  vector<string> images;
+  std::vector<std::string> images;
 };
+
 
 class MiniSlider: public Node {
 public:
   MiniSlider();
-  vector<string> images;
+  std::vector<std::string> images;
+};
+
+
+class Anchor: public Node {
+public:
+  Anchor();
+};
+
+
+class Break: public Node {
+public:
+  Break();
 };
 
 
 /* class JournalModel { */
 /* public: */
-/*   String id; */
-/*   String name; */
-/*   vector<string> items; */
+/*   shot::String id; */
+/*   shot::String name; */
+/*   std::vector<std::string> items; */
 /* }; */
-/* typedef unique_ptr<JournalModel> JournalPtr; */
+/* typedef std::unique_ptr<JournalModel> JournalPtr; */
 
 
 /* class CodeModel { */
 /* public: */
-/*   String id; */
-/*   String text; */
+/*   shot::String id; */
+/*   shot::String text; */
 /* }; */
-/* typedef unique_ptr<CodeModel> CodePtr; */
+/* typedef std::unique_ptr<CodeModel> CodePtr; */
 
 
 /* class FileModel { */
 /* public: */
-/*   String id; */
-/*   String filename; */
+/*   shot::String id; */
+/*   shot::String filename; */
 /* }; */
-/* typedef unique_ptr<FileModel> FilePtr; */
+/* typedef std::unique_ptr<FileModel> FilePtr; */
 
 
 /* class GalleryModel { */
 /* public: */
-/*   String id; */
-/*   vector<string> images; */
+/*   shot::String id; */
+/*   std::vector<std::string> images; */
 /* }; */
-/* typedef unique_ptr<GalleryModel> GalleryPtr; */
+/* typedef std::unique_ptr<GalleryModel> GalleryPtr; */
 
 
 /* class GoogleMapModel { */
 /* public: */
-/*   String id; */
+/*   shot::String id; */
 /* }; */
-/* typedef unique_ptr<GoogleMapModel> GoogleMapPtr; */
+/* typedef std::unique_ptr<GoogleMapModel> GoogleMapPtr; */
 
 
 /* class HeaderModel { */
 /* public: */
-/*   String id; */
+/*   shot::String id; */
 /* }; */
-/* typedef unique_ptr<HeaderModel> HeaderPtr; */
+/* typedef std::unique_ptr<HeaderModel> HeaderPtr; */
 
 
 /* class ImageModel { */
 /* public: */
-/*   String id; */
+/*   shot::String id; */
 /* }; */
-/* typedef unique_ptr<ImageModel> ImagePtr; */
+/* typedef std::unique_ptr<ImageModel> ImagePtr; */
 
 
 /* class LinkModel { */
 /* public: */
-/*   String id; */
+/*   shot::String id; */
 /* }; */
-/* typedef unique_ptr<LinkModel> LinkPtr; */
+/* typedef std::unique_ptr<LinkModel> LinkPtr; */
 
 
 /* class TextModel { */
 /* public: */
-/*   String id; */
+/*   shot::String id; */
 /* }; */
-/* typedef unique_ptr<TextModel> TextPtr; */
+/* typedef std::unique_ptr<TextModel> TextPtr; */
 
 
 /* class VideoModel { */
 /* public: */
-/*   String id; */
+/*   shot::String id; */
 /* }; */
-/* typedef unique_ptr<VideoModel> VideoPtr; */
+/* typedef std::unique_ptr<VideoModel> VideoPtr; */
 
 
 } /* namespace journal */

@@ -10,7 +10,7 @@ JournalItems::~JournalItems() {
 
 
 Block::Block() {
-  code = NT_BLOCK;
+  code = NodeType::Block;
 }
 
 
@@ -19,62 +19,72 @@ Block::~Block() {
 
 
 Code::Code() {
-  code = NT_CODE;
+  code = NodeType::Code;
 }
 
 
 Text::Text() {
-  code = NT_TEXT;
+  code = NodeType::Text;
 }
 
 
 Header1::Header1() {
-  code = NT_H1;
+  code = NodeType::H1;
 }
 
 
 Header2::Header2() {
-  code = NT_H2;
+  code = NodeType::H2;
 }
 
 
 Link::Link() {
-  code = NT_LINK;
+  code = NodeType::Link;
 }
 
 
 Video::Video() {
-  code = NT_VIDEO;
+  code = NodeType::Video;
 }
 
 
 GoogleMap::GoogleMap() {
-  code = NT_GOOGLE_MAP;
+  code = NodeType::GoogleMap;
 }
 
 
 File::File() {
-  code = NT_FILE;
+  code = NodeType::File;
 }
 
 
 Image::Image() {
-  code = NT_IMAGE;
+  code = NodeType::Image;
 }
 
 
 Gallery::Gallery() {
-  code = NT_GALLERY;
+  code = NodeType::Gallery;
 }
 
 
 BigSlider::BigSlider() {
-  code = NT_BIG_SLIDER;
+  code = NodeType::BigSlider;
 }
 
 
 MiniSlider::MiniSlider() {
-  code = NT_MINI_SLIDER;
+  code = NodeType::MiniSlider;
+}
+
+
+Anchor::Anchor() {
+  code = NodeType::Anchor;
+}
+
+
+Break::Break() {
+  code = NodeType::Break;
 }
 
   
