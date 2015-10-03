@@ -11,6 +11,8 @@
 namespace journal {
 
 
+char const DF = shot::DELIM_FIELD;
+char const DR = shot::DELIM_ROW;
 class Node;
 
 
@@ -34,12 +36,37 @@ enum class NodeType {
 };
 
 
-class Journal {
+class Journal: public shot::Model {
 public:
+  static int const NAME = 2;
+  static int const SLUG = 3;
+  static int const KEYWORDS = 4;
+  static int const DESCRIPTION = 5;
+  static int const SHOW = 6;
+  static int const ITEMS = 7;
+  static int const TAGS = 8;
+
+  static std::string const S_NAME;
+  static std::string const S_SLUG;
+  static std::string const S_KEYWORDS;
+  static std::string const S_DESCRIPTION;
+  static std::string const S_SHOW;
+  static std::string const S_ITEMS;
+  static std::string const S_TAGS;
+
+  int fromDbFormat(bson::bo& obj);
+  int parseField(int code, std::string const& value);
+  void toDbFormat(bson::bob& builder);
+  void toCompactFormat(ostream& stream);
+
   shot::String id;
   shot::String name;
   shot::String slug;
+  shot::String keywords;
+  shot::String description;
+  shot::Bool show;
   std::vector<std::string> items;
+  std::vector<std::string> tags;
 };
 typedef std::unique_ptr<Journal> JournalPtr;
 
@@ -59,6 +86,7 @@ public:
   shot::String padding;
   shot::String margin;
 };
+typedef std::unique_ptr<Node> NodePtr;
 
 
 class Block: public Node {
