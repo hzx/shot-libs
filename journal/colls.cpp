@@ -89,8 +89,10 @@ void Collection::remove(string& id) {
 
 
 int Collection::query(int page, std::ostream& out) {
-  auto cursor = db->conn.query(table, bson::bo());
-  return shot::cursorToStream<Journal>(*cursor, out).limit(COUNT_PER_PAGE);
+  // TODO: push paging here in query
+
+  auto cursor = db->conn.query(table, mongo::Query().sort(shot::S_ID, -1), COUNT_PER_PAGE);
+  return shot::cursorToStream<Journal>(*cursor, out);
 }
 
 
@@ -121,6 +123,14 @@ void ItemsCollection::remove(string& id) {
 }
 
 
+int ItemsCollection::queryPageItems(std::string pageId, ostream& out) {
+  if (pageId.size() < shot::OID_SIZE) return 0;
+
+  auto cursor = db->conn.query(table, BSON(Node::S_PAGE_ID << mongo::OID(pageId)));
+  return itemsCursorToStream(*cursor, out);
+}
+
+
 Document::Document(shot::DbClient* db, char const* table) {
   this->db = db;
   this->table = table;
@@ -133,6 +143,66 @@ void Document::update(string& params, ostream& updates) {
   for (int i = 0; i < rows.size(); ++i) {
     auto fields = shot::parseFields(rows[i]);
   }
+}
+
+
+int itemsCursorToStream(mongo::DBClientCursor& cursor, std::ostream& stream) {
+  int counter = 0;
+
+  while (cursor.more()) {
+    ++counter;
+    bson::bo obj = cursor.next();
+    std::unique_ptr<Node> node;
+
+    if (obj.hasField(Node::S_TYPE)) {
+      int nodeType = obj.getField(Node::S_TYPE).Int();
+      node.reset(createNode(static_cast<NodeType>(nodeType)));
+      if (node.get() == nullptr) continue;
+    }
+
+    node->fromDbFormat(obj);
+    node->toCompactFormat(stream);
+
+    stream << shot::DELIM_ROW;
+  }
+
+  return counter;
+}
+
+
+Node* createNode(NodeType nodeType) {
+  switch (nodeType) {
+    case NodeType::H1:
+      return new Header1();
+    case NodeType::H2:
+      return new Header2();
+    case NodeType::Text:
+      return new Text();
+    case NodeType::Code:
+      return new Code();
+    case NodeType::Link:
+      return new Link();
+    case NodeType::Video:
+      return new Video();
+    case NodeType::GoogleMap:
+      return new GoogleMap();
+    case NodeType::File:
+      return new File();
+    case NodeType::Image:
+      return new Image();
+    case NodeType::Gallery:
+      return new Gallery();
+    case NodeType::BigSlider:
+      return new BigSlider();
+    case NodeType::MiniSlider:
+      return new MiniSlider();
+    case NodeType::Anchor:
+      return new Anchor();
+    case NodeType::Break:
+      return new Break();
+  }
+
+  return nullptr;
 }
 
 

@@ -35,6 +35,7 @@ public:
   void update(string& id, Node& node, ostream& updates);
   void append(Node& node, ostream& updates);
   void remove(string& id);
+  int queryPageItems(std::string pageId, ostream& out);
 
   shot::DbClient* db;
   char const* table;
@@ -49,6 +50,10 @@ public:
   shot::DbClient* db;
   char const* table;
 };
+
+
+int itemsCursorToStream(mongo::DBClientCursor& cursor, std::ostream& stream);
+Node* createNode(NodeType nodeType);
 
 
 } /* namespace journal */

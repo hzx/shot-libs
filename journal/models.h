@@ -80,121 +80,277 @@ public:
 
 class Node {
 public:
+  static int const TYPE = 2;
+  static int const PAGE_ID = 3;
+  static int const STYLE = 4;
+
+  static std::string const S_TYPE;
+  static std::string const S_PAGE_ID;
+  static std::string const S_STYLE;
+
+  NodeType nodeType;
   shot::String id;
-  NodeType code;
-  shot::String styleClass;
-  shot::String padding;
-  shot::String margin;
+  shot::String pageId;
+  shot::String style;
+
+  virtual int fromDbFormat(bson::bo& obj) = 0;
+  virtual int parseField(int code, std::string const& value) = 0;
+  virtual void toDbFormat(bson::bob& builder) = 0;
+  virtual void toCompactFormat(ostream& stream) = 0;
 };
 typedef std::unique_ptr<Node> NodePtr;
 
 
 class Block: public Node {
 public:
+  std::vector<Node*> nodes;
+
   Block();
   ~Block();
-  std::vector<Node*> nodes;
-};
 
-
-class Code: public Node {
-public:
-  Code();
-  shot::String value;
-};
-
-
-class Text: public Node {
-public:
-  Text();
-  shot::String value;
+  int fromDbFormat(bson::bo& obj);
+  int parseField(int code, std::string const& value);
+  void toDbFormat(bson::bob& builder);
+  void toCompactFormat(ostream& stream);
 };
 
 
 class Header1: public Node {
 public:
   Header1();
-  shot::String value;
+
+  int fromDbFormat(bson::bo& obj);
+  int parseField(int code, std::string const& value);
+  void toDbFormat(bson::bob& builder);
+  void toCompactFormat(ostream& stream);
 };
 
 
-class Header2: public Header1 {
+class Header2: public Node {
 public:
+  static int const TEXT = 5;
+
+  static std::string const S_TEXT;
+
+  shot::String text;
+
   Header2();
+
+  int fromDbFormat(bson::bo& obj);
+  int parseField(int code, std::string const& value);
+  void toDbFormat(bson::bob& builder);
+  void toCompactFormat(ostream& stream);
+};
+
+
+class Text: public Node {
+public:
+  static int const TEXT = 5;
+
+  static std::string const S_TEXT;
+
+  shot::String text;
+
+  Text();
+
+  int fromDbFormat(bson::bo& obj);
+  int parseField(int code, std::string const& value);
+  void toDbFormat(bson::bob& builder);
+  void toCompactFormat(ostream& stream);
+};
+
+
+class Code: public Node {
+public:
+  static int const TEXT = 5;
+
+  static std::string const S_TEXT;
+
+  shot::String text;
+
+  Code();
+
+  int fromDbFormat(bson::bo& obj);
+  int parseField(int code, std::string const& value);
+  void toDbFormat(bson::bob& builder);
+  void toCompactFormat(ostream& stream);
 };
 
 
 class Link: public Node {
 public:
+  static int const SRC = 5;
+  static int const ALT = 6;
+
+  static std::string const S_SRC;
+  static std::string const S_ALT;
+
+  shot::String src;
+  shot::String alt;
+
   Link();
-  shot::String source;
-  shot::String text;
+
+  int fromDbFormat(bson::bo& obj);
+  int parseField(int code, std::string const& value);
+  void toDbFormat(bson::bob& builder);
+  void toCompactFormat(ostream& stream);
 };
 
 
 class Video: public Node {
 public:
+  static int const TEXT = 5;
+
+  static std::string const S_TEXT;
+
+  shot::String text;
+
   Video();
-  shot::String source;
+
+  int fromDbFormat(bson::bo& obj);
+  int parseField(int code, std::string const& value);
+  void toDbFormat(bson::bob& builder);
+  void toCompactFormat(ostream& stream);
 };
 
 
 class GoogleMap: public Node {
 public:
-  GoogleMap();
+  static int const ZOOM = 5;
+  static int const LAT = 6;
+  static int const LNG = 7;
+
+  static std::string const S_ZOOM;
+  static std::string const S_LAT;
+  static std::string const S_LNG;
+
   shot::Int zoom;
   shot::Float lat;
   shot::Float lng;
-  shot::String icon;
+  /* shot::String icon; */
+  
+  GoogleMap();
+
+  int fromDbFormat(bson::bo& obj);
+  int parseField(int code, std::string const& value);
+  void toDbFormat(bson::bob& builder);
+  void toCompactFormat(ostream& stream);
 };
 
 
 class File: public Node {
 public:
-  File();
+  static int const FILENAME = 5;
+  static int const TEXT = 6;
+
+  static std::string const S_FILENAME;
+  static std::string const S_TEXT;
+
   shot::String filename;
   shot::String text;
+
+  File();
+
+  int fromDbFormat(bson::bo& obj);
+  int parseField(int code, std::string const& value);
+  void toDbFormat(bson::bob& builder);
+  void toCompactFormat(ostream& stream);
 };
 
 
 class Image: public Node {
 public:
-  Image();
+  static int const FILENAME = 5;
+
+  static std::string const S_FILENAME;
+
   shot::String filename;
+
+  Image();
+
+  int fromDbFormat(bson::bo& obj);
+  int parseField(int code, std::string const& value);
+  void toDbFormat(bson::bob& builder);
+  void toCompactFormat(ostream& stream);
 };
 
 
 class Gallery: public Node {
 public:
-  Gallery();
+  static int const IMAGES = 5;
+
+  static std::string const S_IMAGES;
+
   std::vector<std::string> images;
+
+  Gallery();
+
+  int fromDbFormat(bson::bo& obj);
+  int parseField(int code, std::string const& value);
+  void toDbFormat(bson::bob& builder);
+  void toCompactFormat(ostream& stream);
 };
 
 
 class BigSlider: public Node {
 public:
-  BigSlider();
+  static int const IMAGES = 5;
+
+  static std::string const S_IMAGES;
+
   std::vector<std::string> images;
+
+  BigSlider();
+
+  int fromDbFormat(bson::bo& obj);
+  int parseField(int code, std::string const& value);
+  void toDbFormat(bson::bob& builder);
+  void toCompactFormat(ostream& stream);
 };
 
 
 class MiniSlider: public Node {
 public:
-  MiniSlider();
+  static int const IMAGES = 5;
+
+  static std::string const S_IMAGES;
+
   std::vector<std::string> images;
+
+  MiniSlider();
+
+  int fromDbFormat(bson::bo& obj);
+  int parseField(int code, std::string const& value);
+  void toDbFormat(bson::bob& builder);
+  void toCompactFormat(ostream& stream);
 };
 
 
 class Anchor: public Node {
 public:
-  Anchor();
+  static int const NAME = 5;
+
+  static std::string const S_NAME;
+
   shot::String name;
+
+  Anchor();
+
+  int fromDbFormat(bson::bo& obj);
+  int parseField(int code, std::string const& value);
+  void toDbFormat(bson::bob& builder);
+  void toCompactFormat(ostream& stream);
 };
 
 
 class Break: public Node {
 public:
   Break();
+
+  int fromDbFormat(bson::bo& obj);
+  int parseField(int code, std::string const& value);
+  void toDbFormat(bson::bob& builder);
+  void toCompactFormat(ostream& stream);
 };
 
 
