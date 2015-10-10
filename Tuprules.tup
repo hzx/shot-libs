@@ -11,7 +11,7 @@ BUILD=build-release
 DEBUG_OPT=
 endif
 
-CC = clang++
+CC = g++
 OPT += -Wall -O2 -std=c++11 $(DEBUG_OPT)
 
 CFLAGS += -I$(TUP_CWD)/server\
