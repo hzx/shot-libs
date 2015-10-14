@@ -45,6 +45,7 @@ public:
   static int const SHOW = 6;
   static int const ITEMS = 7;
   static int const TAGS = 8;
+  static int const SEARCH_TAGS = 9;
 
   static std::string const S_NAME;
   static std::string const S_SLUG;
@@ -53,6 +54,7 @@ public:
   static std::string const S_SHOW;
   static std::string const S_ITEMS;
   static std::string const S_TAGS;
+  static std::string const S_SEARCH_TAGS;
 
   int fromDbFormat(bson::bo& obj);
   int parseField(int code, std::string const& value);
@@ -67,6 +69,7 @@ public:
   shot::Bool show;
   std::vector<std::string> items;
   std::vector<std::string> tags;
+  std::vector<std::string> searchTags;
 };
 typedef std::unique_ptr<Journal> JournalPtr;
 
@@ -78,7 +81,7 @@ public:
 };
   
 
-class Node {
+class Node: public shot::Model {
 public:
   static int const TYPE = 2;
   static int const PAGE_ID = 3;
@@ -88,11 +91,12 @@ public:
   static std::string const S_PAGE_ID;
   static std::string const S_STYLE;
 
-  NodeType nodeType;
   shot::String id;
+  NodeType nodeType;
   shot::String pageId;
   shot::String style;
 
+  virtual ~Node();
   virtual int fromDbFormat(bson::bo& obj) = 0;
   virtual int parseField(int code, std::string const& value) = 0;
   virtual void toDbFormat(bson::bob& builder) = 0;
@@ -181,12 +185,15 @@ class Link: public Node {
 public:
   static int const SRC = 5;
   static int const ALT = 6;
+  static int const TEXT = 7;
 
   static std::string const S_SRC;
   static std::string const S_ALT;
+  static std::string const S_TEXT;
 
   shot::String src;
   shot::String alt;
+  shot::String text;
 
   Link();
 

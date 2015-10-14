@@ -1,4 +1,6 @@
 #include "models.h"
+#include "shot/utils.h"
+#include "shot/translit.h"
 
 
 namespace journal {
@@ -11,6 +13,7 @@ std::string const Journal::S_DESCRIPTION = std::to_string(Journal::DESCRIPTION);
 std::string const Journal::S_SHOW = std::to_string(Journal::SHOW);
 std::string const Journal::S_ITEMS = std::to_string(Journal::ITEMS);
 std::string const Journal::S_TAGS = std::to_string(Journal::TAGS);
+std::string const Journal::S_SEARCH_TAGS = std::to_string(Journal::SEARCH_TAGS);
 
 
 int Journal::fromDbFormat(bson::bo& obj) {
@@ -25,10 +28,20 @@ int Journal::fromDbFormat(bson::bo& obj) {
     show.set(val == 1);
   }
   if (obj.hasField(S_ITEMS)) {
-    // TODO: fill items
+    std::string items_ = obj.getField(S_ITEMS).String();
+    shot::split(items_, ',', items);
   }
   if (obj.hasField(S_TAGS)) {
-    // TODO: split obj.tags and fill tags
+    auto arr = obj.getField(S_TAGS).Array();
+    for (auto i: arr) {
+      tags.push_back(i.String());
+    }
+  }
+  if (obj.hasField(S_SEARCH_TAGS)) {
+    auto arr = obj.getField(S_SEARCH_TAGS).Array();
+    for (auto i: arr) {
+      searchTags.push_back(i.String());
+    }
   }
 
   return 0;
@@ -55,9 +68,11 @@ int Journal::parseField(int code, std::string const& value) {
     case SHOW:
       show.set(std::stoi(value) == 1);
       break;
-    case ITEMS: // TODO: set
+    case ITEMS: // skip
       break;
-    case TAGS: // TODO: set
+    case TAGS: // skip
+      break;
+    case SEARCH_TAGS: // skip
       break;
   }
 
@@ -75,12 +90,17 @@ void Journal::toDbFormat(bson::bob& builder) {
     builder << S_SHOW << (show.value ? 1 : 0);
   }
   if (not items.empty()) {
-    // TODO: set
-    // builder << S_ITEMS <<
+    builder << S_ITEMS << shot::join(items, ',');
   }
   if (not tags.empty()) {
-    // TODO: set
-    // builder << S_TAGS <<
+    mongo::BSONArrayBuilder bab;
+    for (string& tag: tags) bab.append(tag);
+    builder << S_TAGS << bab.arr();
+  }
+  if (not searchTags.empty()) {
+    mongo::BSONArrayBuilder bab;
+    for (string& tag: searchTags) bab.append(tag);
+    builder << S_SEARCH_TAGS << bab.arr();
   }
 }
 
@@ -94,12 +114,15 @@ void Journal::toCompactFormat(ostream& stream) {
   if (show.has) {
     stream << S_SHOW << DF << (show.value ? '1' : '0') << DF;
   }
-  if (not items.empty()) {
-    // TODO: set
-  }
-  if (not tags.empty()) {
-    // TODO: set
-  }
+  /* if (not items.empty()) { // skip */
+  /* } */
+  /* if (not tags.empty()) { // skip */
+  /* } */
+  // skip searchTags
+}
+
+
+Node::~Node() {
 }
 
 
@@ -145,14 +168,17 @@ int Block::parseField(int code, std::string const& value) {
 }
 
 void Block::toDbFormat(bson::bob& builder) {
-  if (id.has) builder << shot::S_ID << mongo::OID(id.value);
+  if (id.has) {
+    builder << shot::S_ID << mongo::OID(id.value)
+      << Node::S_TYPE << static_cast<int>(nodeType);
+  }
   if (pageId.has) builder << Node::S_PAGE_ID << mongo::OID(pageId.value);
   if (style.has) builder << Node::S_STYLE << style.value;
 }
 
 void Block::toCompactFormat(ostream& stream) {
-  stream << Node::S_TYPE << DF << static_cast<int>(nodeType) << DF;
-  if (id.has) stream << shot::S_ID << DF << id.value << DF;
+  stream << static_cast<int>(nodeType) << DR;
+  if (id.has) stream << shot::ID << DF << id.value << DF;
   if (pageId.has) stream << Node::S_PAGE_ID << DF << pageId.value << DF;
   if (style.has) stream << Node::S_STYLE << DF << style.value << DF;
 }
@@ -187,14 +213,17 @@ int Header1::parseField(int code, std::string const& value) {
 }
 
 void Header1::toDbFormat(bson::bob& builder) {
-  if (id.has) builder << shot::S_ID << mongo::OID(id.value);
+  if (id.has) {
+    builder << shot::S_ID << mongo::OID(id.value)
+      << Node::S_TYPE << static_cast<int>(nodeType);
+  }
   if (pageId.has) builder << Node::S_PAGE_ID << mongo::OID(pageId.value);
   if (style.has) builder << Node::S_STYLE << style.value;
 }
 
 void Header1::toCompactFormat(ostream& stream) {
-  stream << Node::S_TYPE << DF << static_cast<int>(nodeType) << DF;
-  if (id.has) stream << shot::S_ID << DF << id.value << DF;
+  stream << static_cast<int>(nodeType) << DR;
+  if (id.has) stream << shot::ID << DF << id.value << DF;
   if (pageId.has) stream << Node::S_PAGE_ID << DF << pageId.value << DF;
   if (style.has) stream << Node::S_STYLE << DF << style.value << DF;
 }
@@ -236,15 +265,18 @@ int Header2::parseField(int code, std::string const& value) {
 }
 
 void Header2::toDbFormat(bson::bob& builder) {
-  if (id.has) builder << shot::S_ID << mongo::OID(id.value);
+  if (id.has) {
+    builder << shot::S_ID << mongo::OID(id.value)
+      << Node::S_TYPE << static_cast<int>(nodeType);
+  }
   if (pageId.has) builder << Node::S_PAGE_ID << mongo::OID(pageId.value);
   if (style.has) builder << Node::S_STYLE << style.value;
   if (text.has) builder << S_TEXT << text.value;
 }
 
 void Header2::toCompactFormat(ostream& stream) {
-  stream << Node::S_TYPE << DF << static_cast<int>(nodeType) << DF;
-  if (id.has) stream << shot::S_ID << DF << id.value << DF;
+  stream << static_cast<int>(nodeType) << DR;
+  if (id.has) stream << shot::ID << DF << id.value << DF;
   if (pageId.has) stream << Node::S_PAGE_ID << DF << pageId.value << DF;
   if (style.has) stream << Node::S_STYLE << DF << style.value << DF;
   if (text.has) stream << S_TEXT << DF << text.value << DF;
@@ -287,15 +319,18 @@ int Text::parseField(int code, std::string const& value) {
 }
 
 void Text::toDbFormat(bson::bob& builder) {
-  if (id.has) builder << shot::S_ID << mongo::OID(id.value);
+  if (id.has) {
+    builder << shot::S_ID << mongo::OID(id.value)
+      << Node::S_TYPE << static_cast<int>(nodeType);
+  }
   if (pageId.has) builder << Node::S_PAGE_ID << mongo::OID(pageId.value);
   if (style.has) builder << Node::S_STYLE << style.value;
   if (text.has) builder << S_TEXT << text.value;
 }
 
 void Text::toCompactFormat(ostream& stream) {
-  stream << Node::S_TYPE << DF << static_cast<int>(nodeType) << DF;
-  if (id.has) stream << shot::S_ID << DF << id.value << DF;
+  stream << static_cast<int>(nodeType) << DR;
+  if (id.has) stream << shot::ID << DF << id.value << DF;
   if (pageId.has) stream << Node::S_PAGE_ID << DF << pageId.value << DF;
   if (style.has) stream << Node::S_STYLE << DF << style.value << DF;
   if (text.has) stream << S_TEXT << DF << text.value << DF;
@@ -338,15 +373,18 @@ int Code::parseField(int code, std::string const& value) {
 }
 
 void Code::toDbFormat(bson::bob& builder) {
-  if (id.has) builder << shot::S_ID << mongo::OID(id.value);
+  if (id.has) {
+    builder << shot::S_ID << mongo::OID(id.value)
+      << Node::S_TYPE << static_cast<int>(nodeType);
+  }
   if (pageId.has) builder << Node::S_PAGE_ID << mongo::OID(pageId.value);
   if (style.has) builder << Node::S_STYLE << style.value;
   if (text.has) builder << S_TEXT << text.value;
 }
 
 void Code::toCompactFormat(ostream& stream) {
-  stream << Node::S_TYPE << DF << static_cast<int>(nodeType) << DF;
-  if (id.has) stream << shot::S_ID << DF << id.value << DF;
+  stream << static_cast<int>(nodeType) << DR;
+  if (id.has) stream << shot::ID << DF << id.value << DF;
   if (pageId.has) stream << Node::S_PAGE_ID << DF << pageId.value << DF;
   if (style.has) stream << Node::S_STYLE << DF << style.value << DF;
   if (text.has) stream << S_TEXT << DF << text.value << DF;
@@ -355,6 +393,7 @@ void Code::toCompactFormat(ostream& stream) {
 
 std::string const Link::S_SRC = std::to_string(Link::SRC);
 std::string const Link::S_ALT = std::to_string(Link::ALT);
+std::string const Link::S_TEXT = std::to_string(Link::TEXT);
 
 
 Link::Link() {
@@ -367,6 +406,7 @@ int Link::fromDbFormat(bson::bo& obj) {
   if (obj.hasField(Node::S_STYLE)) style.set(obj.getField(Node::S_STYLE).String());
   if (obj.hasField(S_SRC)) src.set(obj.getField(S_SRC).String());
   if (obj.hasField(S_ALT)) alt.set(obj.getField(S_ALT).String());
+  if (obj.hasField(S_TEXT)) text.set(obj.getField(S_TEXT).String());
 
   return 0;
 }
@@ -388,26 +428,34 @@ int Link::parseField(int code, std::string const& value) {
     case ALT:
       alt.set(value);
       break;
+    case TEXT:
+      text.set(value);
+      break;
   }
 
   return 0;
 }
 
 void Link::toDbFormat(bson::bob& builder) {
-  if (id.has) builder << shot::S_ID << mongo::OID(id.value);
+  if (id.has) {
+    builder << shot::S_ID << mongo::OID(id.value)
+      << Node::S_TYPE << static_cast<int>(nodeType);
+  }
   if (pageId.has) builder << Node::S_PAGE_ID << mongo::OID(pageId.value);
   if (style.has) builder << Node::S_STYLE << style.value;
   if (src.has) builder << S_SRC << src.value;
   if (alt.has) builder << S_ALT << alt.value;
+  if (text.has) builder << S_TEXT << text.value;
 }
 
 void Link::toCompactFormat(ostream& stream) {
-  stream << Node::S_TYPE << DF << static_cast<int>(nodeType) << DF;
-  if (id.has) stream << shot::S_ID << DF << id.value << DF;
+  stream << static_cast<int>(nodeType) << DR;
+  if (id.has) stream << shot::ID << DF << id.value << DF;
   if (pageId.has) stream << Node::S_PAGE_ID << DF << pageId.value << DF;
   if (style.has) stream << Node::S_STYLE << DF << style.value << DF;
   if (src.has) stream << S_SRC << DF << src.value << DF;
   if (alt.has) stream << S_ALT << DF << alt.value << DF;
+  if (text.has) stream << S_TEXT << DF << text.value << DF;
 }
 
 
@@ -447,15 +495,18 @@ int Video::parseField(int code, std::string const& value) {
 }
 
 void Video::toDbFormat(bson::bob& builder) {
-  if (id.has) builder << shot::S_ID << mongo::OID(id.value);
+  if (id.has) {
+    builder << shot::S_ID << mongo::OID(id.value)
+      << Node::S_TYPE << static_cast<int>(nodeType);
+  }
   if (pageId.has) builder << Node::S_PAGE_ID << mongo::OID(pageId.value);
   if (style.has) builder << Node::S_STYLE << style.value;
   if (text.has) builder << S_TEXT << text.value;
 }
 
 void Video::toCompactFormat(ostream& stream) {
-  stream << Node::S_TYPE << DF << static_cast<int>(nodeType) << DF;
-  if (id.has) stream << shot::S_ID << DF << id.value << DF;
+  stream << static_cast<int>(nodeType) << DR;
+  if (id.has) stream << shot::ID << DF << id.value << DF;
   if (pageId.has) stream << Node::S_PAGE_ID << DF << pageId.value << DF;
   if (style.has) stream << Node::S_STYLE << DF << style.value << DF;
   if (text.has) stream << S_TEXT << DF << text.value << DF;
@@ -508,7 +559,10 @@ int GoogleMap::parseField(int code, std::string const& value) {
 }
 
 void GoogleMap::toDbFormat(bson::bob& builder) {
-  if (id.has) builder << shot::S_ID << mongo::OID(id.value);
+  if (id.has) {
+    builder << shot::S_ID << mongo::OID(id.value)
+      << Node::S_TYPE << static_cast<int>(nodeType);
+  }
   if (pageId.has) builder << Node::S_PAGE_ID << mongo::OID(pageId.value);
   if (style.has) builder << Node::S_STYLE << style.value;
   if (zoom.has) builder << S_ZOOM << zoom.value;
@@ -517,8 +571,8 @@ void GoogleMap::toDbFormat(bson::bob& builder) {
 }
 
 void GoogleMap::toCompactFormat(ostream& stream) {
-  stream << Node::S_TYPE << DF << static_cast<int>(nodeType) << DF;
-  if (id.has) stream << shot::S_ID << DF << id.value << DF;
+  stream << static_cast<int>(nodeType) << DR;
+  if (id.has) stream << shot::ID << DF << id.value << DF;
   if (pageId.has) stream << Node::S_PAGE_ID << DF << pageId.value << DF;
   if (style.has) stream << Node::S_STYLE << DF << style.value << DF;
   if (zoom.has) stream << S_ZOOM << DF << zoom.value << DF;
@@ -568,7 +622,10 @@ int File::parseField(int code, std::string const& value) {
 }
 
 void File::toDbFormat(bson::bob& builder) {
-  if (id.has) builder << shot::S_ID << mongo::OID(id.value);
+  if (id.has) {
+    builder << shot::S_ID << mongo::OID(id.value)
+      << Node::S_TYPE << static_cast<int>(nodeType);
+  }
   if (pageId.has) builder << Node::S_PAGE_ID << mongo::OID(pageId.value);
   if (style.has) builder << Node::S_STYLE << style.value;
   if (filename.has) builder << S_FILENAME << filename.value;
@@ -576,8 +633,8 @@ void File::toDbFormat(bson::bob& builder) {
 }
 
 void File::toCompactFormat(ostream& stream) {
-  stream << Node::S_TYPE << DF << static_cast<int>(nodeType) << DF;
-  if (id.has) stream << shot::S_ID << DF << id.value << DF;
+  stream << static_cast<int>(nodeType) << DR;
+  if (id.has) stream << shot::ID << DF << id.value << DF;
   if (pageId.has) stream << Node::S_PAGE_ID << DF << pageId.value << DF;
   if (style.has) stream << Node::S_STYLE << DF << style.value << DF;
   if (filename.has) stream << S_FILENAME << DF << filename.value << DF;
@@ -621,15 +678,18 @@ int Image::parseField(int code, std::string const& value) {
 }
 
 void Image::toDbFormat(bson::bob& builder) {
-  if (id.has) builder << shot::S_ID << mongo::OID(id.value);
+  if (id.has) {
+    builder << shot::S_ID << mongo::OID(id.value)
+      << Node::S_TYPE << static_cast<int>(nodeType);
+  }
   if (pageId.has) builder << Node::S_PAGE_ID << mongo::OID(pageId.value);
   if (style.has) builder << Node::S_STYLE << style.value;
   if (filename.has) builder << S_FILENAME << filename.value;
 }
 
 void Image::toCompactFormat(ostream& stream) {
-  stream << Node::S_TYPE << DF << static_cast<int>(nodeType) << DF;
-  if (id.has) stream << shot::S_ID << DF << id.value << DF;
+  stream << static_cast<int>(nodeType) << DR;
+  if (id.has) stream << shot::ID << DF << id.value << DF;
   if (pageId.has) stream << Node::S_PAGE_ID << DF << pageId.value << DF;
   if (style.has) stream << Node::S_STYLE << DF << style.value << DF;
   if (filename.has) stream << S_FILENAME << DF << filename.value << DF;
@@ -648,7 +708,8 @@ int Gallery::fromDbFormat(bson::bo& obj) {
   if (obj.hasField(Node::S_PAGE_ID)) pageId.set(obj.getField(Node::S_PAGE_ID).OID().toString());
   if (obj.hasField(Node::S_STYLE)) style.set(obj.getField(Node::S_STYLE).String());
   if (obj.hasField(S_IMAGES)) {
-    // TODO: split by delimiter and assign
+    std::string imgs = obj.getField(S_IMAGES).String();
+    shot::split(imgs, ':', images);
   }
 
   return 0;
@@ -666,7 +727,7 @@ int Gallery::parseField(int code, std::string const& value) {
       style.set(value);
       break;
     case IMAGES:
-      // TODO: split by delimiter and assign
+      shot::split(const_cast<std::string&>(value), ':', images);
       break;
   }
 
@@ -674,21 +735,24 @@ int Gallery::parseField(int code, std::string const& value) {
 }
 
 void Gallery::toDbFormat(bson::bob& builder) {
-  if (id.has) builder << shot::S_ID << mongo::OID(id.value);
+  if (id.has) {
+    builder << shot::S_ID << mongo::OID(id.value)
+      << Node::S_TYPE << static_cast<int>(nodeType);
+  }
   if (pageId.has) builder << Node::S_PAGE_ID << mongo::OID(pageId.value);
   if (style.has) builder << Node::S_STYLE << style.value;
   if (images.size() > 0) {
-    // TODO: join by : and assign
+    builder << Gallery::S_IMAGES << shot::join(images, ':');
   }
 }
 
 void Gallery::toCompactFormat(ostream& stream) {
-  stream << Node::S_TYPE << DF << static_cast<int>(nodeType) << DF;
-  if (id.has) stream << shot::S_ID << DF << id.value << DF;
+  stream << static_cast<int>(nodeType) << DR;
+  if (id.has) stream << shot::ID << DF << id.value << DF;
   if (pageId.has) stream << Node::S_PAGE_ID << DF << pageId.value << DF;
   if (style.has) stream << Node::S_STYLE << DF << style.value << DF;
   if (images.size() > 0) {
-    // TODO: join by : and assign
+    stream << Gallery::S_IMAGES << DF << shot::join(images, ':') << DF;
   }
 }
 
@@ -705,7 +769,8 @@ int BigSlider::fromDbFormat(bson::bo& obj) {
   if (obj.hasField(Node::S_PAGE_ID)) pageId.set(obj.getField(Node::S_PAGE_ID).OID().toString());
   if (obj.hasField(Node::S_STYLE)) style.set(obj.getField(Node::S_STYLE).String());
   if (obj.hasField(S_IMAGES)) {
-    // TODO: split by delimiter and assign
+    std::string imgs = obj.getField(S_IMAGES).String();
+    shot::split(imgs, ':', images);
   }
 
   return 0;
@@ -723,7 +788,7 @@ int BigSlider::parseField(int code, std::string const& value) {
       style.set(value);
       break;
     case IMAGES:
-      // TODO: split by delimiter and assign
+      shot::split(const_cast<std::string&>(value), ':', images);
       break;
   }
 
@@ -731,21 +796,24 @@ int BigSlider::parseField(int code, std::string const& value) {
 }
 
 void BigSlider::toDbFormat(bson::bob& builder) {
-  if (id.has) builder << shot::S_ID << mongo::OID(id.value);
+  if (id.has) {
+    builder << shot::S_ID << mongo::OID(id.value)
+      << Node::S_TYPE << static_cast<int>(nodeType);
+  }
   if (pageId.has) builder << Node::S_PAGE_ID << mongo::OID(pageId.value);
   if (style.has) builder << Node::S_STYLE << style.value;
   if (images.size() > 0) {
-    // TODO: join by : and assign
+    builder << BigSlider::S_IMAGES << shot::join(images, ':');
   }
 }
 
 void BigSlider::toCompactFormat(ostream& stream) {
-  stream << Node::S_TYPE << DF << static_cast<int>(nodeType) << DF;
-  if (id.has) stream << shot::S_ID << DF << id.value << DF;
+  stream << static_cast<int>(nodeType) << DR;
+  if (id.has) stream << shot::ID << DF << id.value << DF;
   if (pageId.has) stream << Node::S_PAGE_ID << DF << pageId.value << DF;
   if (style.has) stream << Node::S_STYLE << DF << style.value << DF;
   if (images.size() > 0) {
-    // TODO: join by : and assign
+    stream << BigSlider::S_IMAGES << DF << shot::join(images, ':') << DF;
   }
 }
 
@@ -762,7 +830,8 @@ int MiniSlider::fromDbFormat(bson::bo& obj) {
   if (obj.hasField(Node::S_PAGE_ID)) pageId.set(obj.getField(Node::S_PAGE_ID).OID().toString());
   if (obj.hasField(Node::S_STYLE)) style.set(obj.getField(Node::S_STYLE).String());
   if (obj.hasField(S_IMAGES)) {
-    // TODO: split by delimiter and assign
+    std::string imgs = obj.getField(S_IMAGES).String();
+    shot::split(imgs, ':', images);
   }
 
   return 0;
@@ -780,7 +849,7 @@ int MiniSlider::parseField(int code, std::string const& value) {
       style.set(value);
       break;
     case IMAGES:
-      // TODO: split by delimiter and assign
+      shot::split(const_cast<std::string&>(value), ':', images);
       break;
   }
 
@@ -788,21 +857,24 @@ int MiniSlider::parseField(int code, std::string const& value) {
 }
 
 void MiniSlider::toDbFormat(bson::bob& builder) {
-  if (id.has) builder << shot::S_ID << mongo::OID(id.value);
+  if (id.has) {
+    builder << shot::S_ID << mongo::OID(id.value)
+      << Node::S_TYPE << static_cast<int>(nodeType);
+  }
   if (pageId.has) builder << Node::S_PAGE_ID << mongo::OID(pageId.value);
   if (style.has) builder << Node::S_STYLE << style.value;
   if (images.size() > 0) {
-    // TODO: join by : and assign
+    builder << MiniSlider::S_IMAGES << shot::join(images, ':');
   }
 }
 
 void MiniSlider::toCompactFormat(ostream& stream) {
-  stream << Node::S_TYPE << DF << static_cast<int>(nodeType) << DF;
-  if (id.has) stream << shot::S_ID << DF << id.value << DF;
+  stream << static_cast<int>(nodeType) << DR;
+  if (id.has) stream << shot::ID << DF << id.value << DF;
   if (pageId.has) stream << Node::S_PAGE_ID << DF << pageId.value << DF;
   if (style.has) stream << Node::S_STYLE << DF << style.value << DF;
   if (images.size() > 0) {
-    // TODO: join by : and assign
+    stream << MiniSlider::S_IMAGES << DF << shot::join(images, ':') << DF;
   }
 }
 
@@ -843,15 +915,18 @@ int Anchor::parseField(int code, std::string const& value) {
 }
 
 void Anchor::toDbFormat(bson::bob& builder) {
-  if (id.has) builder << shot::S_ID << mongo::OID(id.value);
+  if (id.has) {
+    builder << shot::S_ID << mongo::OID(id.value)
+      << Node::S_TYPE << static_cast<int>(nodeType);
+  }
   if (pageId.has) builder << Node::S_PAGE_ID << mongo::OID(pageId.value);
   if (style.has) builder << Node::S_STYLE << style.value;
   if (name.has) builder << S_NAME << name.value;
 }
 
 void Anchor::toCompactFormat(ostream& stream) {
-  stream << Node::S_TYPE << DF << static_cast<int>(nodeType) << DF;
-  if (id.has) stream << shot::S_ID << DF << id.value << DF;
+  stream << static_cast<int>(nodeType) << DR;
+  if (id.has) stream << shot::ID << DF << id.value << DF;
   if (pageId.has) stream << Node::S_PAGE_ID << DF << pageId.value << DF;
   if (style.has) stream << Node::S_STYLE << DF << style.value << DF;
   if (name.has) stream << S_NAME << DF << name.value << DF;
@@ -887,14 +962,17 @@ int Break::parseField(int code, std::string const& value) {
 }
 
 void Break::toDbFormat(bson::bob& builder) {
-  if (id.has) builder << shot::S_ID << mongo::OID(id.value);
+  if (id.has) {
+    builder << shot::S_ID << mongo::OID(id.value)
+      << Node::S_TYPE << static_cast<int>(nodeType);
+  }
   if (pageId.has) builder << Node::S_PAGE_ID << mongo::OID(pageId.value);
   if (style.has) builder << Node::S_STYLE << style.value;
 }
 
 void Break::toCompactFormat(ostream& stream) {
-  stream << Node::S_TYPE << DF << static_cast<int>(nodeType) << DF;
-  if (id.has) stream << shot::S_ID << DF << id.value << DF;
+  stream << static_cast<int>(nodeType) << DR;
+  if (id.has) stream << shot::ID << DF << id.value << DF;
   if (pageId.has) stream << Node::S_PAGE_ID << DF << pageId.value << DF;
   if (style.has) stream << Node::S_STYLE << DF << style.value << DF;
 }
