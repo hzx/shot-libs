@@ -106,62 +106,72 @@ public:
 };
 
 
+/* class Collection { */
+/* public: */
+/*   static int const COUNT_PER_PAGE = 16; */
+
+/*   Collection(shot::DbClient* db, char const* table, char const* itemsTable); */
+/*   static void genId(Journal& journal, std::ostream& updates); */
+/*   static void genSlug(Journal& journal, std::ostream& updates); */
+/*   static void genTags(Journal& journal, std::ostream& updates); */
+/*   JournalPtr get(string& id); */
+/*   JournalPtr getBySlug(string& slug); */
+/*   void update(string& id, Journal& journal, ostream& updates); */
+/*   void updateRaw(string& id, string& journal, ostream& updates); */
+/*   void append(Journal& journal, ostream& updates); */
+/*   void appendRaw(string& journal, ostream& updates); */
+/*   void remove(string& id); */
+/*   int query(int page, std::ostream& out); */
+
+/*   void updateField(std::string& id, std::string params, */
+/*       std::string& parentId, std::string& parentField, std::ostream& updates); */
+
+/*   // reset */
+  
+/*   void insertField(std::string obj, */
+/*       std::string& parentId, int parentField, int nodeType, */
+/*       std::ostream& updates); */
+
+/*   void insertBeforeField(std::string obj, std::string beforeId, */
+/*       std::string& parentId, int parentField, int nodeType, */
+/*       std::ostream& updates); */
+
+/*   void appendField(std::string& obj, */
+/*       std::string& parentId, int parentField, int nodeType, */
+/*       std::ostream& updates); */
+
+/*   void moveField(std::string& id, std::string& beforeId, */
+/*       std::string& parentId, int parentField, int nodeType); */
+
+/*   void removeField(std::string& id, std::string& parentId, int parentField, */
+/*       int nodeType); */
+
+/*   void updateField(std::string& id, std::string& params, int parentField, */
+/*       int nodeType, std::ostream& updates); */
+
+/*   shot::DbClient* db; */
+/*   char const* table; */
+/*   ItemsCollection items; */
+/* }; */
+
+
 class Collection {
 public:
   static int const COUNT_PER_PAGE = 16;
-
-  Collection(shot::DbClient* db, char const* table, char const* itemsTable);
   static void genId(Journal& journal, std::ostream& updates);
   static void genSlug(Journal& journal, std::ostream& updates);
   static void genTags(Journal& journal, std::ostream& updates);
-  JournalPtr get(string& id);
+
+  Collection(shot::DbClient* db, char const* table, char const* itemsTable);
+  void init();
+  void getFirst(Journal& journal);
+  JournalPtr get(std::string& id);
   JournalPtr getBySlug(string& slug);
-  void update(string& id, Journal& journal, ostream& updates);
-  void updateRaw(string& id, string& journal, ostream& updates);
+  void update(std::string& id, Journal& journal, ostream& updates);
+  void updateRaw(std::string& id, string& params, ostream& updates);
   void append(Journal& journal, ostream& updates);
   void appendRaw(string& journal, ostream& updates);
   void remove(string& id);
-  int query(int page, std::ostream& out);
-
-  void updateField(std::string& id, std::string params,
-      std::string& parentId, std::string& parentField, std::ostream& updates);
-
-  // reset
-  
-  void insertField(std::string obj,
-      std::string& parentId, int parentField, int nodeType,
-      std::ostream& updates);
-
-  void insertBeforeField(std::string obj, std::string beforeId,
-      std::string& parentId, int parentField, int nodeType,
-      std::ostream& updates);
-
-  void appendField(std::string& obj,
-      std::string& parentId, int parentField, int nodeType,
-      std::ostream& updates);
-
-  void moveField(std::string& id, std::string& beforeId,
-      std::string& parentId, int parentField, int nodeType);
-
-  void removeField(std::string& id, std::string& parentId, int parentField,
-      int nodeType);
-
-  void updateField(std::string& id, std::string& params, int parentField,
-      int nodeType, std::ostream& updates);
-
-  shot::DbClient* db;
-  char const* table;
-  ItemsCollection items;
-};
-
-
-class Document {
-public:
-  Document(shot::DbClient* db, char const* table, char const* itemsTable);
-  void init();
-  void get(Journal& journal);
-  void update(Journal& journal, ostream& updates);
-  void updateRaw(string& params, ostream& updates);
 
   void insertField(std::string& obj, std::string& beforeId,
       std::string& parentId, int parentField, int nodeType,
@@ -177,6 +187,8 @@ public:
 
   void updateField(std::string& id, std::string& params, int parentField,
       int nodeType, std::ostream& updates);
+
+  int query(int page, std::ostream& out);
 
   shot::DbClient* db;
   char const* table;

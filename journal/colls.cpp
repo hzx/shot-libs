@@ -613,12 +613,263 @@ int ItemsCollection::queryPageItems(std::string pageId, ostream& out) {
 }
 
 
-Collection::Collection(shot::DbClient* db, char const* table,
-    char const* itemsTable)
-    : items(db, itemsTable) {
-  this->db = db;
-  this->table = table;
-}
+/* Collection::Collection(shot::DbClient* db, char const* table, */
+/*     char const* itemsTable) */
+/*     : items(db, itemsTable) { */
+/*   this->db = db; */
+/*   this->table = table; */
+/* } */
+
+
+/* void Collection::genId(Journal& journal, std::ostream& updates) { */
+/*   std::string id = shot::newId(); */
+/*   journal.id.set(id); */
+/*   updates << shot::ID << DF << id << DF; */
+/* } */
+
+
+/* void Collection::genSlug(Journal& journal, std::ostream& updates) { */
+/*   auto slug = shot::slugify(journal.name.value); */
+/*   journal.slug.set(slug); */
+/*   updates << Journal::S_SLUG << DF << slug << DF; */
+/* } */
+
+
+/* void Collection::genTags(Journal& journal, std::ostream& updates) { */
+/*   shot::createTags(journal.name.value, journal.tags); */
+/*   shot::createSearchTags(journal.tags, journal.searchTags); */
+/* } */
+
+
+/* JournalPtr Collection::get(string& id) { */
+/*   if (id.length() < shot::OID_SIZE) return nullptr; */
+
+/*   bson::bo obj = db->conn.findOne(table, BSON(shot::S_ID << mongo::OID(id))); */
+/*   if (obj.isEmpty()) return nullptr; */
+
+/*   JournalPtr journal(new Journal()); */
+/*   journal->fromDbFormat(obj); */
+
+/*   return journal; */
+/* } */
+
+
+/* JournalPtr Collection::getBySlug(string& slug) { */
+/*   bson::bo obj = db->conn.findOne(table, BSON(Journal::S_SLUG << slug)); */
+/*   if (obj.isEmpty()) return nullptr; */
+
+/*   JournalPtr journal(new Journal()); */
+/*   journal->fromDbFormat(obj); */
+
+/*   return journal; */
+/* } */
+
+
+/* void Collection::update(string& id, Journal& journal, ostream& updates) { */
+/*   if (journal.name.has) { */
+/*     genSlug(journal, updates); */
+/*     genTags(journal, updates); */
+/*   } */
+
+/*   bson::bob builder; */
+
+/*   journal.toDbFormat(builder); */
+/*   db->conn.update(table, */
+/*     BSON(shot::S_ID << mongo::OID(id)), */
+/*     BSON("$set" << builder.obj()) */
+/*   ); */
+/* } */
+
+/* void Collection::updateRaw(string& id, string& journal_, ostream& updates) { */
+/*   Journal journal; */
+
+/*   int error = journal.fromCompactFormat(journal_); */
+/*   if (error != 0) return; */
+
+/*   update(id, journal, updates); */
+/* } */
+
+
+/* void Collection::append(Journal& journal, ostream& updates) { */
+/*   if (journal.id.value.length() < shot::OID_SIZE) genId(journal, updates); */
+/*   genSlug(journal, updates); */
+/*   genTags(journal, updates); */
+
+/*   bson::bob builder; */
+
+/*   journal.toDbFormat(builder); */
+/*   db->conn.insert(table, builder.obj()); */
+/* } */
+
+
+/* void Collection::appendRaw(string& journal_, ostream& updates) { */
+/*   Journal journal; */
+
+/*   int error = journal.fromCompactFormat(journal_); */
+/*   if (error != 0) return; */
+
+/*   append(journal, updates); */
+/* } */
+
+
+/* void Collection::remove(string& id) { */
+/*   if (id.length() < shot::OID_SIZE) return; */
+
+/*   db->conn.remove(table, BSON(shot::S_ID << mongo::OID(id))); */
+/* } */
+
+
+/* int Collection::query(int page, std::ostream& out) { */
+/*   // TODO: push paging here in query */
+
+/*   auto cursor = db->conn.query(table, */
+/*     mongo::Query().sort(shot::S_ID, -1), */
+/*     COUNT_PER_PAGE); */
+/*   return shot::cursorToStream<Journal>(*cursor, out); */
+/* } */
+
+
+/* /1* void Collection: *1/ */
+
+/* // reset */
+
+/* void Collection::insertField(std::string obj, */
+/*     std::string& parentId, int parentField, int nodeType, */
+/*     std::ostream& updates) { */
+/*   auto journal = get(parentId); */
+/*   if (journal.get() == nullptr) return; */
+
+/*   Journal update; */
+
+/*   switch (parentField) { */
+/*     case Journal::ITEMS: */
+/*       // insert id to journal items field */
+/*       break; */
+/*   } */
+/* } */
+
+/* void Collection::insertBeforeField(std::string obj, std::string beforeId, */
+/*     std::string& parentId, int parentField, int nodeType, */
+/*     std::ostream& updates) { */
+/*   auto journal = get(parentId); */
+/*   if (journal.get() == nullptr) return; */
+
+/*   Journal update; */
+
+/*   switch (parentField) { */
+/*     case Journal::ITEMS: */
+/*       // insertBefore id to journal items field */
+/*       break; */
+/*   } */
+/* } */
+
+/* void Collection::appendField(std::string& obj, */
+/*     std::string& parentId, int parentField, int nodeType, */
+/*     std::ostream& updates) { */
+/*   auto journal = get(parentId); */
+/*   if (journal.get() == nullptr) return; */
+
+/*   std::string objId; */
+
+/*   switch (static_cast<NodeType>(nodeType)) { */
+/*     case NodeType::Block: */
+/*       break; */
+/*     case NodeType::H1: */
+/*       { */
+/*         Header1 header; */
+/*         header.fromCompactFormat(obj); */
+/*         objId = header.id.value; */
+
+/*         // debug */
+/*         std::cout << "objId: " << objId << std::endl; */
+
+/*         items.appendH1(header, updates); */
+
+/*         // debug */
+/*         std::cout << "header.id: " << header.id.value << std::endl; */
+/*       } */
+/*       break; */
+/*     case NodeType::H2: */
+/*       { */
+/*         /1* Header2 header; *1/ */
+/*         /1* header.fromCompactFormat(obj); *1/ */
+/*         /1* objId = header.id.value; *1/ */
+/*         /1* items.appendH2(header, updates); *1/ */
+/*       } */
+/*       break; */
+/*     case NodeType::Text: */
+/*       break; */
+/*     case NodeType::Code: */
+/*       break; */
+/*     case NodeType::Link: */
+/*       break; */
+/*     case NodeType::Video: */
+/*       break; */
+/*     case NodeType::GoogleMap: */
+/*       break; */
+/*     case NodeType::File: */
+/*       break; */
+/*     case NodeType::Image: */
+/*       break; */
+/*     case NodeType::Gallery: */
+/*       break; */
+/*     case NodeType::BigSlider: */
+/*       break; */
+/*     case NodeType::MiniSlider: */
+/*       break; */
+/*     case NodeType::Anchor: */
+/*       break; */
+/*     case NodeType::Break: */
+/*       break; */
+/*   } */
+
+/*   if (not objId.empty()) { */
+/*     Journal upd; */
+/*     shot::insert(objId, "", upd.items); */
+
+/*     update(objId, upd, updates); */
+/*   } */
+/*   /1* switch (parentField) { *1/ */
+/*   /1*   case Journal::ITEMS: *1/ */
+/*   /1*     // append id to journal items field *1/ */
+/*   /1*     break; *1/ */
+/*   /1* } *1/ */
+/* } */
+
+/* void Collection::moveField(std::string& id, std::string& beforeId, */
+/*     std::string& parentId, int parentField, int nodeType) { */
+/*   auto journal = get(parentId); */
+/*   if (journal.get() == nullptr) return; */
+
+/*   Journal update; */
+
+/*   switch (parentField) { */
+/*     case Journal::ITEMS: */
+/*       // move id */
+/*       break; */
+/*   } */
+/* } */
+
+/* void Collection::removeField(std::string& id, std::string& parentId, */
+/*     int parentField, int nodeType) { */
+/*   // get journal */
+/*   auto journal = get(parentId); */
+/*   if (journal.get() == nullptr) return; // parent not found */
+  
+
+/*   switch (parentField) { */
+/*     case Journal::ITEMS: */
+/*       // remove id from journal items field */
+      
+/*       items.remove(id); */
+/*       break; */
+/*   } */
+/* } */
+
+/* void Collection::updateField(std::string& id, std::string& params, int parentField, */
+/*     int nodeType, std::ostream& updates) { */
+/*   std::cout << "Collection.updateField not implemented\n"; */
+/* } */
 
 
 void Collection::genId(Journal& journal, std::ostream& updates) {
@@ -640,17 +891,45 @@ void Collection::genTags(Journal& journal, std::ostream& updates) {
   shot::createSearchTags(journal.tags, journal.searchTags);
 }
 
+Collection::Collection(shot::DbClient* db, char const* table,
+    char const* itemsTable)
+    : items(db, itemsTable) {
+  this->db = db;
+  this->table = table;
+}
 
-JournalPtr Collection::get(string& id) {
-  if (id.length() < shot::OID_SIZE) return nullptr;
 
+void Collection::init() {
+  // get document
+  bson::bo obj = db->conn.findOne(table, bson::bo());
+  if (!obj.isEmpty()) return; // document exists - do nothing
+
+  std::string id = shot::newId();
+  Journal journal;
+  journal.id.set(id);
+
+  bson::bob builder;
+  journal.toDbFormat(builder);
+
+  db->conn.insert(table, builder.obj());
+}
+
+
+void Collection::getFirst(Journal& journal) {
+  bson::bo obj = db->conn.findOne(table, bson::bo());
+
+  journal.fromDbFormat(obj);
+}
+
+
+JournalPtr Collection::get(std::string& id) {
   bson::bo obj = db->conn.findOne(table, BSON(shot::S_ID << mongo::OID(id)));
   if (obj.isEmpty()) return nullptr;
 
-  JournalPtr journal(new Journal());
-  journal->fromDbFormat(obj);
+  JournalPtr doc(new Journal());
+  doc->fromDbFormat(obj);
 
-  return journal;
+  return doc;
 }
 
 
@@ -665,26 +944,26 @@ JournalPtr Collection::getBySlug(string& slug) {
 }
 
 
-void Collection::update(string& id, Journal& journal, ostream& updates) {
-  if (journal.name.has) {
-    genSlug(journal, updates);
-    genTags(journal, updates);
+void Collection::update(std::string& id, Journal& doc, ostream& updates) {
+  if (doc.name.has) {
+    Collection::genSlug(doc, updates);
+    Collection::genTags(doc, updates);
   }
 
   bson::bob builder;
 
-  journal.toDbFormat(builder);
+  doc.toDbFormat(builder);
+
   db->conn.update(table,
     BSON(shot::S_ID << mongo::OID(id)),
     BSON("$set" << builder.obj())
   );
 }
 
-void Collection::updateRaw(string& id, string& journal_, ostream& updates) {
-  Journal journal;
 
-  int error = journal.fromCompactFormat(journal_);
-  if (error != 0) return;
+void Collection::updateRaw(std::string& id, string& params, ostream& updates) {
+  Journal journal;
+  journal.fromCompactFormat(params);
 
   update(id, journal, updates);
 }
@@ -719,221 +998,15 @@ void Collection::remove(string& id) {
 }
 
 
-int Collection::query(int page, std::ostream& out) {
-  // TODO: push paging here in query
-
-  auto cursor = db->conn.query(table,
-    mongo::Query().sort(shot::S_ID, -1),
-    COUNT_PER_PAGE);
-  return shot::cursorToStream<Journal>(*cursor, out);
-}
-
-
-/* void Collection: */
-
-// reset
-
-void Collection::insertField(std::string obj,
-    std::string& parentId, int parentField, int nodeType,
-    std::ostream& updates) {
-  auto journal = get(parentId);
-  if (journal.get() == nullptr) return;
-
-  Journal update;
-
-  switch (parentField) {
-    case Journal::ITEMS:
-      // insert id to journal items field
-      break;
-  }
-}
-
-void Collection::insertBeforeField(std::string obj, std::string beforeId,
-    std::string& parentId, int parentField, int nodeType,
-    std::ostream& updates) {
-  auto journal = get(parentId);
-  if (journal.get() == nullptr) return;
-
-  Journal update;
-
-  switch (parentField) {
-    case Journal::ITEMS:
-      // insertBefore id to journal items field
-      break;
-  }
-}
-
-void Collection::appendField(std::string& obj,
-    std::string& parentId, int parentField, int nodeType,
-    std::ostream& updates) {
-  auto journal = get(parentId);
-  if (journal.get() == nullptr) return;
-
-  std::string objId;
-
-  switch (static_cast<NodeType>(nodeType)) {
-    case NodeType::Block:
-      break;
-    case NodeType::H1:
-      {
-        Header1 header;
-        header.fromCompactFormat(obj);
-        objId = header.id.value;
-
-        // debug
-        std::cout << "objId: " << objId << std::endl;
-
-        items.appendH1(header, updates);
-
-        // debug
-        std::cout << "header.id: " << header.id.value << std::endl;
-      }
-      break;
-    case NodeType::H2:
-      {
-        /* Header2 header; */
-        /* header.fromCompactFormat(obj); */
-        /* objId = header.id.value; */
-        /* items.appendH2(header, updates); */
-      }
-      break;
-    case NodeType::Text:
-      break;
-    case NodeType::Code:
-      break;
-    case NodeType::Link:
-      break;
-    case NodeType::Video:
-      break;
-    case NodeType::GoogleMap:
-      break;
-    case NodeType::File:
-      break;
-    case NodeType::Image:
-      break;
-    case NodeType::Gallery:
-      break;
-    case NodeType::BigSlider:
-      break;
-    case NodeType::MiniSlider:
-      break;
-    case NodeType::Anchor:
-      break;
-    case NodeType::Break:
-      break;
-  }
-
-  if (not objId.empty()) {
-    Journal upd;
-    shot::insert(objId, "", upd.items);
-
-    update(objId, upd, updates);
-  }
-  /* switch (parentField) { */
-  /*   case Journal::ITEMS: */
-  /*     // append id to journal items field */
-  /*     break; */
-  /* } */
-}
-
-void Collection::moveField(std::string& id, std::string& beforeId,
-    std::string& parentId, int parentField, int nodeType) {
-  auto journal = get(parentId);
-  if (journal.get() == nullptr) return;
-
-  Journal update;
-
-  switch (parentField) {
-    case Journal::ITEMS:
-      // move id
-      break;
-  }
-}
-
-void Collection::removeField(std::string& id, std::string& parentId,
-    int parentField, int nodeType) {
-  // get journal
-  auto journal = get(parentId);
-  if (journal.get() == nullptr) return; // parent not found
-  
-
-  switch (parentField) {
-    case Journal::ITEMS:
-      // remove id from journal items field
-      
-      items.remove(id);
-      break;
-  }
-}
-
-void Collection::updateField(std::string& id, std::string& params, int parentField,
-    int nodeType, std::ostream& updates) {
-  std::cout << "Collection.updateField not implemented\n";
-}
-
-Document::Document(shot::DbClient* db, char const* table,
-    char const* itemsTable)
-    : items(db, itemsTable) {
-  this->db = db;
-  this->table = table;
-}
-
-
-void Document::init() {
-  // get document
-  bson::bo obj = db->conn.findOne(table, bson::bo());
-  if (!obj.isEmpty()) return; // document exists - do nothing
-
-  std::string id = shot::newId();
-  Journal journal;
-  journal.id.set(id);
-
-  bson::bob builder;
-  journal.toDbFormat(builder);
-
-  db->conn.insert(table, builder.obj());
-}
-
-
-void Document::get(Journal& journal) {
-  bson::bo obj = db->conn.findOne(table, bson::bo());
-
-  journal.fromDbFormat(obj);
-}
-
-
-void Document::update(Journal& journal, ostream& updates) {
-  if (journal.name.has) {
-    Collection::genSlug(journal, updates);
-    Collection::genTags(journal, updates);
-  }
-
-  bson::bob builder;
-
-  journal.toDbFormat(builder);
-
-  db->conn.update(table,
-    bson::bo(),
-    BSON("$set" << builder.obj())
-  );
-}
-
-
-void Document::updateRaw(string& params, ostream& updates) {
-  Journal journal;
-  journal.fromCompactFormat(params);
-
-  update(journal, updates);
-}
-
-
-void Document::insertField(std::string& obj, std::string& beforeId,
+void Collection::insertField(std::string& obj, std::string& beforeId,
     std::string& parentId, int parentField, int nodeType,
     std::ostream& updates) {
   std::string objId;
 
-  Journal journal;
-  get(journal);
+  auto journal = get(parentId);
+  if (journal.get() == nullptr) return;
+
+  // debug
 
   switch (static_cast<NodeType>(nodeType)) {
     case NodeType::Block:
@@ -986,41 +1059,41 @@ void Document::insertField(std::string& obj, std::string& beforeId,
     switch (parentField) {
       case Journal::ITEMS:
         Journal upd;
-        upd.items = journal.items;
+        upd.items = journal->items;
 
         shot::insert(objId, beforeId, upd.items);
-        update(upd, updates);
+        update(parentId, upd, updates);
         break;
 
     }
   }
 }
 
-void Document::moveField(std::string& id, std::string& beforeId,
+void Collection::moveField(std::string& id, std::string& beforeId,
     std::string& parentId, int parentField) {
-  Journal doc;
-  get(doc);
+  auto doc = get(parentId);
+  if (doc.get() == nullptr) return;
 
   switch (parentField) {
     case Journal::ITEMS:
       {
         std::ostringstream dummy;
         Journal upd;
-        upd.items = doc.items;
+        upd.items = doc->items;
 
         shot::move(id, beforeId, upd.items);
-        update(upd, dummy);
+        update(parentId, upd, dummy);
       }
       break;
   }
 }
 
-void Document::removeField(std::string& id, std::string& parentId,
+void Collection::removeField(std::string& id, std::string& parentId,
     int parentField, int nodeType) {
   if (parentId.empty()) return;
 
-  Journal doc;
-  get(doc);
+  auto doc = get(parentId);
+  if (doc.get() == nullptr) return;
 
   switch (parentField) {
     case Journal::ITEMS:
@@ -1029,16 +1102,16 @@ void Document::removeField(std::string& id, std::string& parentId,
 
         std::ostringstream dummy;
         Journal upd;
-        upd.items = doc.items;
+        upd.items = doc->items;
 
         shot::remove(id, upd.items);
-        update(upd, dummy);
+        update(parentId, upd, dummy);
       }
       break;
   }
 }
 
-void Document::removeItem(std::string& id, int nodeType) {
+void Collection::removeItem(std::string& id, int nodeType) {
   switch (static_cast<NodeType>(nodeType)) {
     case NodeType::None:
       break;
@@ -1089,13 +1162,23 @@ void Document::removeItem(std::string& id, int nodeType) {
   }
 }
 
-void Document::updateField(std::string& id, std::string& params,
+void Collection::updateField(std::string& id, std::string& params,
     int parentField, int nodeType, std::ostream& updates) {
   switch (parentField) {
     case Journal::ITEMS:
       items.updateItem(nodeType, id, params, updates);
       break;
   }
+}
+
+
+int Collection::query(int page, std::ostream& out) {
+  // TODO: push paging here in query
+
+  auto cursor = db->conn.query(table,
+    mongo::Query().sort(shot::S_ID, -1),
+    COUNT_PER_PAGE);
+  return shot::cursorToStream<Journal>(*cursor, out);
 }
 
 
