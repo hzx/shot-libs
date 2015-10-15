@@ -1,5 +1,5 @@
-#ifndef JOURNAL_COLLS_H
-#define JOURNAL_COLLS_H
+#ifndef JOURNAL_COLLECTIONS_H
+#define JOURNAL_COLLECTIONS_H
 
 #include "models.h"
 #include "shot/DbClient.h"
@@ -203,4 +203,4 @@ Node* createNode(NodeType nodeType);
 } /* namespace journal */
 
 
-#endif /* end of include guard: JOURNAL_COLLS_H */
+#endif /* end of include guard: JOURNAL_COLLECTIONS_H */

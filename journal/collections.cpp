@@ -1,4 +1,4 @@
-#include "colls.h"
+#include "collections.h"
 #include "shot/utils.h"
 #include "shot/translit.h"
 
