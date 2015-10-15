@@ -545,7 +545,12 @@ int GoogleMap::parseField(int code, std::string const& value) {
       style.set(value);
       break;
     case ZOOM:
-      zoom.set(std::stoi(value));
+      if (not value.empty()) {
+        try {
+          zoom.set(std::stoi(value));
+        } catch (...) {
+        }
+      }
       break;
     case LAT:
       if (not value.empty()) {
