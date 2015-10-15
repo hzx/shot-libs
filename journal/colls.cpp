@@ -148,6 +148,11 @@ std::string ItemsCollection::appendGoogleMapRaw(std::string& obj, std::ostream& 
   GoogleMap map;
   map.fromCompactFormat(obj);
 
+  // debug
+  std::cout << "obj: " << obj << std::endl;
+  std::cout << "lng: " << std::to_string(map.lng.value) << std::endl;
+  std::cout << "lat: " << std::to_string(map.lat.value) << std::endl;
+
   appendGoogleMap(map, updates);
 
   return map.id.value;
