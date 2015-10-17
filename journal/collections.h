@@ -160,6 +160,7 @@ public:
   static int const COUNT_PER_PAGE = 16;
   static void genId(Journal& journal, std::ostream& updates);
   static void genSlug(Journal& journal, std::ostream& updates);
+  static void genKeywords(Journal& journal, std::ostream& updates);
   static void genTags(Journal& journal, std::ostream& updates);
 
   Collection(shot::DbClient* db, char const* table, char const* itemsTable);

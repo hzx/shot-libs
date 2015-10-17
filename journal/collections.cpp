@@ -891,9 +891,18 @@ void Collection::genSlug(Journal& journal, std::ostream& updates) {
 }
 
 
+void Collection::genKeywords(Journal& journal, std::ostream& updates) {
+  auto keywords = shot::join(journal.tags, ',');
+  journal.keywords.set(keywords);
+  updates << Journal::S_KEYWORDS << DF << keywords << DF;
+}
+
+
 void Collection::genTags(Journal& journal, std::ostream& updates) {
   shot::createTags(journal.name.value, journal.tags);
   shot::createSearchTags(journal.tags, journal.searchTags);
+
+  if (not journal.tags.empty()) genKeywords(journal, updates);
 }
 
 Collection::Collection(shot::DbClient* db, char const* table,
@@ -998,6 +1007,8 @@ void Collection::appendRaw(string& journal_, ostream& updates) {
 
 void Collection::remove(string& id) {
   if (id.length() < shot::OID_SIZE) return;
+
+  // TODO: remove page items
 
   db->conn.remove(table, BSON(shot::S_ID << mongo::OID(id)));
 }
