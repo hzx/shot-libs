@@ -991,5 +991,67 @@ void Break::toCompactFormat(ostream& stream) {
   if (pageId.has) stream << Node::S_PAGE_ID << DF << pageId.value << DF;
   if (style.has) stream << Node::S_STYLE << DF << style.value << DF;
 }
+
+
+std::string const ArticleSearch::S_QUERY = std::to_string(ArticleSearch::QUERY);
+std::string const ArticleSearch::S_LEFT_ID =
+    std::to_string(ArticleSearch::LEFT_ID);
+std::string const ArticleSearch::S_RIGHT_ID =
+    std::to_string(ArticleSearch::RIGHT_ID);
+std::string const ArticleSearch::S_PAGE_COUNT =
+    std::to_string(ArticleSearch::PAGE_COUNT);
+std::string const ArticleSearch::S_LEFT_EXISTS =
+    std::to_string(ArticleSearch::LEFT_EXISTS);
+std::string const ArticleSearch::S_RIGHT_EXISTS =
+    std::to_string(ArticleSearch::RIGHT_EXISTS);
+
+
+int ArticleSearch::fromDbFormat(bson::bo& obj) {
+  // skip implementation - not needed
+
+  return 0;
+}
+
+int ArticleSearch::parseField(int code, std::string const& value) {
+  switch (code) {
+    case QUERY:
+      query.set(value);
+      break;
+    case LEFT_ID:
+      leftId.set(value);
+      break;
+    case RIGHT_ID:
+      rightId.set(value);
+      break;
+    // skip fields below
+    /* case PAGE_COUNT: */
+    /*   pageCount.set(std::stoi(value)); */
+    /*   break; */
+    /* case LEFT_EXISTS: */
+    /*   leftExists.set(std::stoi(value) == 1); */
+    /*   break; */
+    /* case RIGHT_EXISTS: */
+    /*   rightExists.set(std::stoi(value) == 1): */
+    /*   break; */
+  }
+
+  return 0;
+}
+
+void ArticleSearch::toDbFormat(bson::bob& builder) {
+  // skip
+}
+
+void ArticleSearch::toCompactFormat(ostream& stream) {
+  if (query.has) stream << S_QUERY << DF << query.value << DF;
+  if (leftId.has) stream << S_LEFT_ID << DF << leftId.value << DF;
+  if (rightId.has) stream << S_RIGHT_ID << DF << rightId.value << DF;
+  if (pageCount.has) stream << S_PAGE_COUNT << DF << pageCount.value << DF;
+  if (leftExists.has) stream << S_LEFT_EXISTS << DF <<
+    (leftExists.value ? '1' : '0') << DF;
+  if (rightExists.has) stream << S_RIGHT_EXISTS << DF <<
+    (rightExists.value ? '1' : '0') << DF;
+
+}
   
 } /* namespace journal */

@@ -361,79 +361,34 @@ public:
 };
 
 
-/* class JournalModel { */
-/* public: */
-/*   shot::String id; */
-/*   shot::String name; */
-/*   std::vector<std::string> items; */
-/* }; */
-/* typedef std::unique_ptr<JournalModel> JournalPtr; */
+class ArticleSearch: public shot::Model {
+public:
+  static int const QUERY = 2;
+  static int const LEFT_ID = 3;
+  static int const RIGHT_ID = 4;
+  static int const PAGE_COUNT = 5;
+  static int const LEFT_EXISTS = 6;
+  static int const RIGHT_EXISTS = 7;
 
+  static std::string const S_QUERY;
+  static std::string const S_LEFT_ID;
+  static std::string const S_RIGHT_ID;
+  static std::string const S_PAGE_COUNT;
+  static std::string const S_LEFT_EXISTS;
+  static std::string const S_RIGHT_EXISTS;
 
-/* class CodeModel { */
-/* public: */
-/*   shot::String id; */
-/*   shot::String text; */
-/* }; */
-/* typedef std::unique_ptr<CodeModel> CodePtr; */
+  int fromDbFormat(bson::bo& obj);
+  int parseField(int code, std::string const& value);
+  void toDbFormat(bson::bob& builder);
+  void toCompactFormat(ostream& stream);
 
-
-/* class FileModel { */
-/* public: */
-/*   shot::String id; */
-/*   shot::String filename; */
-/* }; */
-/* typedef std::unique_ptr<FileModel> FilePtr; */
-
-
-/* class GalleryModel { */
-/* public: */
-/*   shot::String id; */
-/*   std::vector<std::string> images; */
-/* }; */
-/* typedef std::unique_ptr<GalleryModel> GalleryPtr; */
-
-
-/* class GoogleMapModel { */
-/* public: */
-/*   shot::String id; */
-/* }; */
-/* typedef std::unique_ptr<GoogleMapModel> GoogleMapPtr; */
-
-
-/* class HeaderModel { */
-/* public: */
-/*   shot::String id; */
-/* }; */
-/* typedef std::unique_ptr<HeaderModel> HeaderPtr; */
-
-
-/* class ImageModel { */
-/* public: */
-/*   shot::String id; */
-/* }; */
-/* typedef std::unique_ptr<ImageModel> ImagePtr; */
-
-
-/* class LinkModel { */
-/* public: */
-/*   shot::String id; */
-/* }; */
-/* typedef std::unique_ptr<LinkModel> LinkPtr; */
-
-
-/* class TextModel { */
-/* public: */
-/*   shot::String id; */
-/* }; */
-/* typedef std::unique_ptr<TextModel> TextPtr; */
-
-
-/* class VideoModel { */
-/* public: */
-/*   shot::String id; */
-/* }; */
-/* typedef std::unique_ptr<VideoModel> VideoPtr; */
+  shot::String query;
+  shot::String leftId;
+  shot::String rightId;
+  shot::Int pageCount;
+  shot::Bool leftExists;
+  shot::Bool rightExists;
+};
 
 
 } /* namespace journal */
