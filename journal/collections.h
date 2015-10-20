@@ -1,8 +1,8 @@
 #ifndef JOURNAL_COLLECTIONS_H
 #define JOURNAL_COLLECTIONS_H
 
-#include "models.h"
 #include "shot/DbClient.h"
+#include "models.h"
 
 namespace journal {
 
@@ -189,7 +189,7 @@ public:
   void updateField(std::string& id, std::string& params, int parentField,
       int nodeType, std::ostream& updates);
 
-  int query(int page, std::ostream& out);
+  int query(ArticleSearch& search, std::ostream& out);
 
   shot::DbClient* db;
   char const* table;

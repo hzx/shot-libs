@@ -1188,8 +1188,7 @@ void Collection::updateField(std::string& id, std::string& params,
 }
 
 
-int Collection::query(int page, std::ostream& out) {
-  // TODO: push paging here in query
+int Collection::query(ArticleSearch& search, std::ostream& out) {
 
   auto cursor = db->conn.query(table,
     mongo::Query().sort(shot::S_ID, -1),
