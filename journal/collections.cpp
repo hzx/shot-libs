@@ -1,4 +1,5 @@
 #include "collections.h"
+#include <algorithm>
 #include "shot/utils.h"
 #include "shot/translit.h"
 
@@ -551,6 +552,7 @@ void ItemsCollection::updateBreak(std::string& id, std::string& params,
 void ItemsCollection::updateItem(int nodeType, std::string& id,
     std::string& params, std::ostream& updates) {
   switch (static_cast<NodeType>(nodeType)) {
+    case NodeType::None:
     case NodeType::Block:
       break;
     case NodeType::H1:
@@ -610,6 +612,10 @@ void ItemsCollection::remove(string& id) {
 
 
 int ItemsCollection::queryPageItems(std::string pageId, ostream& out) {
+  // debug
+  std::cout << "ItemsCollection::queryPageItems, pageId: "
+    << pageId << std::endl;
+
   if (pageId.size() < shot::OID_SIZE) return 0;
 
   auto cursor = db->conn.query(table, BSON(Node::S_PAGE_ID
@@ -905,11 +911,13 @@ void Collection::genTags(Journal& journal, std::ostream& updates) {
   if (not journal.tags.empty()) genKeywords(journal, updates);
 }
 
-Collection::Collection(shot::DbClient* db, char const* table,
+Collection::Collection(shot::DbClient* db,
+    char const* table, int tableCode,
     char const* itemsTable)
     : items(db, itemsTable) {
   this->db = db;
   this->table = table;
+  this->tableCode = tableCode;
 }
 
 
@@ -1025,6 +1033,7 @@ void Collection::insertField(std::string& obj, std::string& beforeId,
   // debug
 
   switch (static_cast<NodeType>(nodeType)) {
+    case NodeType::None:
     case NodeType::Block:
       break;
     case NodeType::H1:
@@ -1189,11 +1198,117 @@ void Collection::updateField(std::string& id, std::string& params,
 
 
 int Collection::query(ArticleSearch& search, std::ostream& out) {
+  // debug
+  std::cout << "---journal.Collection.query:" << std::endl
+    << "query: " << search.query.value
+    << ", leftId: " << search.leftId.value
+    << ", rightId: " << search.rightId.value << std::endl;
+
+  bson::bob builder;
+  ArticleSearch result;
+  std::vector<std::string> searchTags;
+
+  int order = -1; // for right and normal order
+  
+  if (search.leftId.has and search.leftId.value.size() == shot::OID_SIZE) {
+    // debug
+    std::cout << "before builder leftid" << std::endl;
+
+    builder << shot::S_ID << BSON("$gt" << mongo::OID(search.leftId.value));
+
+    // debug
+    std::cout << "after builder leftid" << std::endl;
+
+    order = 1;
+  }
+
+  if (search.rightId.has and search.rightId.value.size() == shot::OID_SIZE) {
+    // debug
+    std::cout << "before builder rightid" << std::endl;
+
+    builder << shot::S_ID << BSON("$lt" << mongo::OID(search.rightId.value));
+
+    // debug
+    std::cout << "after builder rightid" << std::endl;
+  }
+
+  if (search.query.has) { // add tags to query
+    shot::createTags(search.query.value, searchTags);
+
+    // TODO: ands tags to query
+  } else { // without query add pageCount
+    auto count = db->conn.count(table);
+    result.pageCount.set(count);
+  }
 
   auto cursor = db->conn.query(table,
-    mongo::Query().sort(shot::S_ID, -1),
-    COUNT_PER_PAGE);
-  return shot::cursorToStream<Journal>(*cursor, out);
+      mongo::Query(builder.obj()).sort(shot::S_ID, order),
+      COUNT_PER_PAGE);
+  std::vector<Journal> journals;
+  shot::cursorToVector<Journal>(*cursor, journals);
+
+  if (search.leftId.has) { // reverse for left order
+    std::reverse(journals.begin(), journals.end());
+  }
+
+  // debug
+  std::cout << "journals.size: " << journals.size() << std::endl
+    << "table: " << table << std::endl;
+
+  if (not journals.empty()) { // query left and right exists
+    bson::bob lbuilder;
+    bson::bob rbuilder;
+
+    auto lid = journals.front().id.value;
+    auto rid = journals.back().id.value;
+
+    // debug
+    std::cout << "lid: " << lid << ", rid: " << rid << std::endl;
+
+    if (not searchTags.empty()) {
+      // TODO: ands tags to query
+    }
+
+    lbuilder << shot::S_ID << BSON("$gt" << mongo::OID(lid));
+    rbuilder << shot::S_ID << BSON("$lt" << mongo::OID(rid));
+
+    auto lcursor = db->conn.query(table,
+        mongo::Query(lbuilder.obj()).sort(shot::S_ID, 1),
+        1);
+    auto rcursor = db->conn.query(table,
+        mongo::Query(rbuilder.obj()).sort(shot::S_ID, -1),
+        1);
+
+    result.leftExists.set(lcursor->more());
+    if (lcursor->more()) {
+      auto lobj = lcursor->next();
+      Journal ldoc;
+      ldoc.fromDbFormat(lobj);
+
+      std::cout << "ldoc.id: " << ldoc.id.value << std::endl;
+      std::cout << "lobj.isEmpty: " << lobj.isEmpty() << std::endl;
+    }
+
+    result.rightExists.set(rcursor->more());
+    if (rcursor->more()) {
+      auto robj = rcursor->next();
+      Journal rdoc;
+      rdoc.fromDbFormat(robj);
+
+      std::cout << "rdoc.id: " << rdoc.id.value << std::endl;
+      std::cout << "robj.isEmpty: " << robj.isEmpty() << std::endl;
+    }
+  }
+
+  result.toCompactFormat(out);
+  out << shot::DELIM_ROW;
+  shot::vectorToStream<Journal>(tableCode, journals, out);
+
+  // debug
+  std::cout << "====\n";
+
+  /* return shot::cursorToStream<Journal>(*cursor, out); */
+  return journals.size();
 }
 
 

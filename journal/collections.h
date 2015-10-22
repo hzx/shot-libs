@@ -163,7 +163,8 @@ public:
   static void genKeywords(Journal& journal, std::ostream& updates);
   static void genTags(Journal& journal, std::ostream& updates);
 
-  Collection(shot::DbClient* db, char const* table, char const* itemsTable);
+  Collection(shot::DbClient* db,
+      char const* table, int tableCode, char const* itemsTable);
   void init();
   void getFirst(Journal& journal);
   JournalPtr get(std::string& id);
@@ -193,6 +194,7 @@ public:
 
   shot::DbClient* db;
   char const* table;
+  int tableCode;
   ItemsCollection items;
 };
 
