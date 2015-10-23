@@ -190,7 +190,7 @@ public:
   void updateField(std::string& id, std::string& params, int parentField,
       int nodeType, std::ostream& updates);
 
-  int query(ArticleSearch& search, std::ostream& out);
+  int query(PagingSearch& search, std::ostream& out);
 
   shot::DbClient* db;
   char const* table;

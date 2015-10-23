@@ -362,7 +362,7 @@ public:
 };
 
 
-class ArticleSearch: public shot::Model {
+class PagingSearch: public shot::Model {
 public:
   static int const QUERY = 2;
   static int const LEFT_ID = 3;

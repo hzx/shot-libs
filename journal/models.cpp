@@ -993,26 +993,26 @@ void Break::toCompactFormat(ostream& stream) {
 }
 
 
-std::string const ArticleSearch::S_QUERY = std::to_string(ArticleSearch::QUERY);
-std::string const ArticleSearch::S_LEFT_ID =
-    std::to_string(ArticleSearch::LEFT_ID);
-std::string const ArticleSearch::S_RIGHT_ID =
-    std::to_string(ArticleSearch::RIGHT_ID);
-std::string const ArticleSearch::S_PAGE_COUNT =
-    std::to_string(ArticleSearch::PAGE_COUNT);
-std::string const ArticleSearch::S_LEFT_EXISTS =
-    std::to_string(ArticleSearch::LEFT_EXISTS);
-std::string const ArticleSearch::S_RIGHT_EXISTS =
-    std::to_string(ArticleSearch::RIGHT_EXISTS);
+std::string const PagingSearch::S_QUERY = std::to_string(PagingSearch::QUERY);
+std::string const PagingSearch::S_LEFT_ID =
+    std::to_string(PagingSearch::LEFT_ID);
+std::string const PagingSearch::S_RIGHT_ID =
+    std::to_string(PagingSearch::RIGHT_ID);
+std::string const PagingSearch::S_PAGE_COUNT =
+    std::to_string(PagingSearch::PAGE_COUNT);
+std::string const PagingSearch::S_LEFT_EXISTS =
+    std::to_string(PagingSearch::LEFT_EXISTS);
+std::string const PagingSearch::S_RIGHT_EXISTS =
+    std::to_string(PagingSearch::RIGHT_EXISTS);
 
 
-int ArticleSearch::fromDbFormat(bson::bo& obj) {
+int PagingSearch::fromDbFormat(bson::bo& obj) {
   // skip implementation - not needed
 
   return 0;
 }
 
-int ArticleSearch::parseField(int code, std::string const& value) {
+int PagingSearch::parseField(int code, std::string const& value) {
   switch (code) {
     case QUERY:
       query.set(value);
@@ -1038,11 +1038,11 @@ int ArticleSearch::parseField(int code, std::string const& value) {
   return 0;
 }
 
-void ArticleSearch::toDbFormat(bson::bob& builder) {
+void PagingSearch::toDbFormat(bson::bob& builder) {
   // skip
 }
 
-void ArticleSearch::toCompactFormat(ostream& stream) {
+void PagingSearch::toCompactFormat(ostream& stream) {
   if (query.has) stream << S_QUERY << DF << query.value << DF;
   if (leftId.has) stream << S_LEFT_ID << DF << leftId.value << DF;
   if (rightId.has) stream << S_RIGHT_ID << DF << rightId.value << DF;

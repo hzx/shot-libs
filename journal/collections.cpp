@@ -298,7 +298,10 @@ void ItemsCollection::removeH1(std::string& id) {
 
   Header1 header;
   header.fromDbFormat(obj);
+
   // TODO: remove some stuff - images etc
+
+  remove(id);
 }
 
 void ItemsCollection::removeH2(std::string& id) {
@@ -612,10 +615,6 @@ void ItemsCollection::remove(string& id) {
 
 
 int ItemsCollection::queryPageItems(std::string pageId, ostream& out) {
-  // debug
-  std::cout << "ItemsCollection::queryPageItems, pageId: "
-    << pageId << std::endl;
-
   if (pageId.size() < shot::OID_SIZE) return 0;
 
   auto cursor = db->conn.query(table, BSON(Node::S_PAGE_ID
@@ -1197,15 +1196,9 @@ void Collection::updateField(std::string& id, std::string& params,
 }
 
 
-int Collection::query(ArticleSearch& search, std::ostream& out) {
-  // debug
-  std::cout << "---journal.Collection.query:" << std::endl
-    << "query: " << search.query.value
-    << ", leftId: " << search.leftId.value
-    << ", rightId: " << search.rightId.value << std::endl;
-
+int Collection::query(PagingSearch& search, std::ostream& out) {
   bson::bob builder;
-  ArticleSearch result;
+  PagingSearch result;
   std::unordered_set<std::string> queryTags;
   mongo::BSONArray arrTags;
 
@@ -1245,19 +1238,12 @@ int Collection::query(ArticleSearch& search, std::ostream& out) {
     std::reverse(journals.begin(), journals.end());
   }
 
-  // debug
-  std::cout << "journals.size: " << journals.size() << std::endl
-    << "table: " << table << std::endl;
-
   if (not journals.empty()) { // query left and right exists
     bson::bob lbuilder;
     bson::bob rbuilder;
 
     auto lid = journals.front().id.value;
     auto rid = journals.back().id.value;
-
-    // debug
-    std::cout << "lid: " << lid << ", rid: " << rid << std::endl;
 
     if (not queryTags.empty()) {
       /* mongo::BSONArrayBuilder bab; */
@@ -1286,9 +1272,6 @@ int Collection::query(ArticleSearch& search, std::ostream& out) {
       auto lobj = lcursor->next();
       Journal ldoc;
       ldoc.fromDbFormat(lobj);
-
-      std::cout << "ldoc.id: " << ldoc.id.value << std::endl;
-      std::cout << "lobj.isEmpty: " << lobj.isEmpty() << std::endl;
     }
 
     result.rightExists.set(rcursor->more());
@@ -1296,18 +1279,12 @@ int Collection::query(ArticleSearch& search, std::ostream& out) {
       auto robj = rcursor->next();
       Journal rdoc;
       rdoc.fromDbFormat(robj);
-
-      std::cout << "rdoc.id: " << rdoc.id.value << std::endl;
-      std::cout << "robj.isEmpty: " << robj.isEmpty() << std::endl;
     }
   }
 
   result.toCompactFormat(out);
   out << shot::DELIM_ROW;
   shot::vectorToStream<Journal>(tableCode, journals, out);
-
-  // debug
-  std::cout << "====\n";
 
   /* return shot::cursorToStream<Journal>(*cursor, out); */
   return journals.size();
