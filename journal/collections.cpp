@@ -898,7 +898,7 @@ void Collection::genSlug(Journal& journal, std::ostream& updates) {
 
 
 void Collection::genKeywords(Journal& journal, std::ostream& updates) {
-  auto keywords = shot::join(journal.tags, ',');
+  auto keywords = shot::joinSet(journal.tags, ',');
   journal.keywords.set(keywords);
   updates << Journal::S_KEYWORDS << DF << keywords << DF;
 }
@@ -1206,36 +1206,24 @@ int Collection::query(ArticleSearch& search, std::ostream& out) {
 
   bson::bob builder;
   ArticleSearch result;
-  std::vector<std::string> searchTags;
+  std::unordered_set<std::string> queryTags;
 
   int order = -1; // for right and normal order
   
   if (search.leftId.has and search.leftId.value.size() == shot::OID_SIZE) {
-    // debug
-    std::cout << "before builder leftid" << std::endl;
-
-    builder << shot::S_ID << BSON("$gt" << mongo::OID(search.leftId.value));
-
-    // debug
-    std::cout << "after builder leftid" << std::endl;
-
     order = 1;
+    builder << shot::S_ID << BSON("$gt" << mongo::OID(search.leftId.value));
   }
 
   if (search.rightId.has and search.rightId.value.size() == shot::OID_SIZE) {
-    // debug
-    std::cout << "before builder rightid" << std::endl;
-
     builder << shot::S_ID << BSON("$lt" << mongo::OID(search.rightId.value));
-
-    // debug
-    std::cout << "after builder rightid" << std::endl;
   }
 
   if (search.query.has) { // add tags to query
-    shot::createTags(search.query.value, searchTags);
+    shot::createTags(search.query.value, queryTags);
 
     // TODO: ands tags to query
+    /* builder << "$and" << */ 
   } else { // without query add pageCount
     auto count = db->conn.count(table);
     result.pageCount.set(count);
@@ -1265,7 +1253,7 @@ int Collection::query(ArticleSearch& search, std::ostream& out) {
     // debug
     std::cout << "lid: " << lid << ", rid: " << rid << std::endl;
 
-    if (not searchTags.empty()) {
+    if (not queryTags.empty()) {
       // TODO: ands tags to query
     }
 

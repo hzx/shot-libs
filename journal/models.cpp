@@ -34,13 +34,13 @@ int Journal::fromDbFormat(bson::bo& obj) {
   if (obj.hasField(S_TAGS)) {
     auto arr = obj.getField(S_TAGS).Array();
     for (auto i: arr) {
-      tags.push_back(i.String());
+      tags.insert(i.String());
     }
   }
   if (obj.hasField(S_SEARCH_TAGS)) {
     auto arr = obj.getField(S_SEARCH_TAGS).Array();
     for (auto i: arr) {
-      searchTags.push_back(i.String());
+      searchTags.insert(i.String());
     }
   }
 
@@ -94,12 +94,12 @@ void Journal::toDbFormat(bson::bob& builder) {
   }
   if (not tags.empty()) {
     mongo::BSONArrayBuilder bab;
-    for (string& tag: tags) bab.append(tag);
+    for (auto& tag: tags) bab.append(tag);
     builder << S_TAGS << bab.arr();
   }
   if (not searchTags.empty()) {
     mongo::BSONArrayBuilder bab;
-    for (string& tag: searchTags) bab.append(tag);
+    for (auto& tag: searchTags) bab.append(tag);
     builder << S_SEARCH_TAGS << bab.arr();
   }
 }

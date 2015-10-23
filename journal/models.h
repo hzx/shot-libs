@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_set>
 #include <memory>
 #include "shot/Model.h"
 #include "shot/values.h"
@@ -68,8 +69,8 @@ public:
   shot::String description;
   shot::Bool show;
   std::vector<std::string> items;
-  std::vector<std::string> tags;
-  std::vector<std::string> searchTags;
+  std::unordered_set<std::string> tags;
+  std::unordered_set<std::string> searchTags;
 };
 typedef std::unique_ptr<Journal> JournalPtr;
 
