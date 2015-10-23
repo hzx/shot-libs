@@ -1207,6 +1207,7 @@ int Collection::query(ArticleSearch& search, std::ostream& out) {
   bson::bob builder;
   ArticleSearch result;
   std::unordered_set<std::string> queryTags;
+  mongo::BSONArray arrTags;
 
   int order = -1; // for right and normal order
   
@@ -1222,8 +1223,13 @@ int Collection::query(ArticleSearch& search, std::ostream& out) {
   if (search.query.has) { // add tags to query
     shot::createTags(search.query.value, queryTags);
 
-    // TODO: ands tags to query
-    /* builder << "$and" << */ 
+    mongo::BSONArrayBuilder bab;
+    for (auto& tag: queryTags) {
+      bab.append(BSON(Journal::S_SEARCH_TAGS << tag));
+    }
+    arrTags = bab.arr();
+
+    builder << "$and" << arrTags;//bab.arr();
   } else { // without query add pageCount
     auto count = db->conn.count(table);
     result.pageCount.set(count);
@@ -1254,7 +1260,15 @@ int Collection::query(ArticleSearch& search, std::ostream& out) {
     std::cout << "lid: " << lid << ", rid: " << rid << std::endl;
 
     if (not queryTags.empty()) {
-      // TODO: ands tags to query
+      /* mongo::BSONArrayBuilder bab; */
+      /* for (auto& tag: queryTags) { */
+      /*   bab.append(BSON(Journal::S_SEARCH_TAGS << tag)); */
+      /* } */
+
+      /* auto arr = bab.arr(); */
+
+      lbuilder << "$and" << arrTags;
+      rbuilder << "$and" << arrTags;
     }
 
     lbuilder << shot::S_ID << BSON("$gt" << mongo::OID(lid));
