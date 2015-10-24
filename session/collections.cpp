@@ -5,27 +5,22 @@
 namespace session {
 
 
-void FileCollection::genId(FileModel& file, std::ostream& updates) {
+void FileCollection::genId(FileModel& file) {
   std::string id = shot::newId();
   file.id.set(id);
-  updates << shot::ID << DF << id << DF;
 }
 
 
-FileCollection::FileCollection(shot::DbClient* db, char const* table,
-    std::string& dir) {
+FileCollection::FileCollection(shot::DbClient* db, char const* table) {
   this->db = db;
   this->table = table;
-  this->dir = dir;
 }
 
 
-void FileCollection::appendRaw(std::string& obj, std::ostream& updates) {
+void FileCollection::append(FileModel& file) {
   bson::bob builder;
-  FileModel file;
 
-  file.fromCompactFormat(obj);
-  if (file.id.value.length() < shot::OID_SIZE) genId(file, updates);
+  if (file.id.value.length() < shot::OID_SIZE) file.id.set(shot::newId());
   file.toDbFormat(builder);
 
   db->conn.insert(table, builder.obj());
@@ -54,7 +49,7 @@ FilePtr FileCollection::getByName(std::string& name) {
 }
 
 
-void FileCollection::updateRaw(std::string& id, std::string& params, std::ostream& updates) {
+void FileCollection::updateRaw(std::string& id, std::string& params) {
   // do nothing
 }
 

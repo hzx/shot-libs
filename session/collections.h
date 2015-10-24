@@ -13,13 +13,13 @@ namespace session {
 
 class FileCollection {
 public:
-  static void genId(FileModel& file, std::ostream& updates);
+  static void genId(FileModel& file);
 
-  FileCollection(shot::DbClient* db, char const* table, std::string& dir);
-  void appendRaw(std::string& obj, std::ostream& updates);
+  FileCollection(shot::DbClient* db, char const* table);
+  void append(FileModel& file);
   FilePtr get(std::string& id);
   FilePtr getByName(std::string& name);
-  void updateRaw(std::string& id, std::string& params, std::ostream& updates);
+  void updateRaw(std::string& id, std::string& params);
   void remove(std::string& id);
   void removeWithFile(std::string& id);
 
