@@ -657,7 +657,12 @@ void File::toCompactFormat(ostream& stream) {
 }
 
 
+// for 1080p, 2160p
+std::vector<int> const Image::THUMB_SIZES = {300,225, 600,450};
+std::vector<int> const Image::SIZES = {1280,720, 1920,1080, 2560,1440,
+  3840,2160};
 std::string const Image::S_FILENAME = std::to_string(Image::FILENAME);
+std::string const Image::S_ALT = std::to_string(Image::ALT);
 
 
 Image::Image() {
@@ -669,6 +674,7 @@ int Image::fromDbFormat(bson::bo& obj) {
   if (obj.hasField(Node::S_PAGE_ID)) pageId.set(obj.getField(Node::S_PAGE_ID).OID().toString());
   if (obj.hasField(Node::S_STYLE)) style.set(obj.getField(Node::S_STYLE).String());
   if (obj.hasField(S_FILENAME)) filename.set(obj.getField(S_FILENAME).String());
+  if (obj.hasField(S_ALT)) alt.set(obj.getField(S_ALT).String());
 
   return 0;
 }
@@ -687,6 +693,9 @@ int Image::parseField(int code, std::string const& value) {
     case FILENAME:
       filename.set(value);
       break;
+    case ALT:
+      alt.set(value);
+      break;
   }
 
   return 0;
@@ -700,6 +709,7 @@ void Image::toDbFormat(bson::bob& builder) {
   if (pageId.has) builder << Node::S_PAGE_ID << mongo::OID(pageId.value);
   if (style.has) builder << Node::S_STYLE << style.value;
   if (filename.has) builder << S_FILENAME << filename.value;
+  if (alt.has) builder << S_ALT << alt.value;
 }
 
 void Image::toCompactFormat(ostream& stream) {
@@ -708,8 +718,14 @@ void Image::toCompactFormat(ostream& stream) {
   if (pageId.has) stream << Node::S_PAGE_ID << DF << pageId.value << DF;
   if (style.has) stream << Node::S_STYLE << DF << style.value << DF;
   if (filename.has) stream << S_FILENAME << DF << filename.value << DF;
+  if (alt.has) stream << S_ALT << DF << alt.value << DF;
 }
 
+
+// for fullhd (2k) and 4k
+std::vector<int> const Gallery::THUMB_SIZES = {300,225, 600,450};
+// for fullhd (2k) and 4k
+std::vector<int> const Gallery::SIZES = {1920,1080, 3840,2160};
 
 std::string const Gallery::S_IMAGES = std::to_string(Gallery::IMAGES);
 

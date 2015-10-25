@@ -268,11 +268,17 @@ public:
 
 class Image: public Node {
 public:
+  static std::vector<int> const THUMB_SIZES;
+  static std::vector<int> const SIZES;
+
   static int const FILENAME = 5;
+  static int const ALT = 6;
 
   static std::string const S_FILENAME;
+  static std::string const S_ALT;
 
   shot::String filename;
+  shot::String alt;
 
   Image();
 
@@ -285,6 +291,9 @@ public:
 
 class Gallery: public Node {
 public:
+  static std::vector<int> const THUMB_SIZES;
+  static std::vector<int> const SIZES;
+
   static int const IMAGES = 5;
 
   static std::string const S_IMAGES;
