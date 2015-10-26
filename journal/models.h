@@ -250,12 +250,15 @@ class File: public Node {
 public:
   static int const FILENAME = 5;
   static int const TEXT = 6;
+  static int const ALT = 7;
 
   static std::string const S_FILENAME;
   static std::string const S_TEXT;
+  static std::string const S_ALT;
 
   shot::String filename;
   shot::String text;
+  shot::String alt;
 
   File();
 

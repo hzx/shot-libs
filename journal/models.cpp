@@ -598,6 +598,7 @@ void GoogleMap::toCompactFormat(ostream& stream) {
 
 std::string const File::S_FILENAME = std::to_string(File::FILENAME);
 std::string const File::S_TEXT = std::to_string(File::TEXT);
+std::string const File::S_ALT = std::to_string(File::ALT);
 
 
 File::File() {
@@ -610,6 +611,7 @@ int File::fromDbFormat(bson::bo& obj) {
   if (obj.hasField(Node::S_STYLE)) style.set(obj.getField(Node::S_STYLE).String());
   if (obj.hasField(S_FILENAME)) filename.set(obj.getField(S_FILENAME).String());
   if (obj.hasField(S_TEXT)) text.set(obj.getField(S_TEXT).String());
+  if (obj.hasField(S_ALT)) alt.set(obj.getField(S_ALT).String());
 
   return 0;
 }
@@ -631,6 +633,9 @@ int File::parseField(int code, std::string const& value) {
     case TEXT:
       text.set(value);
       break;
+    case ALT:
+      alt.set(value);
+      break;
   }
 
   return 0;
@@ -645,6 +650,7 @@ void File::toDbFormat(bson::bob& builder) {
   if (style.has) builder << Node::S_STYLE << style.value;
   if (filename.has) builder << S_FILENAME << filename.value;
   if (text.has) builder << S_TEXT << text.value;
+  if (alt.has) builder << S_ALT << alt.value;
 }
 
 void File::toCompactFormat(ostream& stream) {
@@ -654,6 +660,7 @@ void File::toCompactFormat(ostream& stream) {
   if (style.has) stream << Node::S_STYLE << DF << style.value << DF;
   if (filename.has) stream << S_FILENAME << DF << filename.value << DF;
   if (text.has) stream << S_TEXT << DF << text.value << DF;
+  if (alt.has) stream << S_ALT << DF << alt.value << DF;
 }
 
 
