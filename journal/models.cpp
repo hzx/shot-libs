@@ -1079,7 +1079,10 @@ void PagingSearch::toCompactFormat(ostream& stream) {
 }
 
 
-std::string const FileUpload::S_COLLECTION = std::to_string(FileUpload::COLLECTION);
+std::string const FileUpload::S_POLYMORPH =
+    std::to_string(FileUpload::POLYMORPH);
+std::string const FileUpload::S_COLLECTION =
+    std::to_string(FileUpload::COLLECTION);
 std::string const FileUpload::S_FIELD = std::to_string(FileUpload::FIELD);
 std::string const FileUpload::S_OBJ_ID = std::to_string(FileUpload::OBJ_ID);
 
@@ -1093,11 +1096,23 @@ int FileUpload::fromDbFormat(bson::bo& obj) {
 
 int FileUpload::parseField(int code, std::string const& value) {
   switch (code) {
+    case POLYMORPH:
+      try {
+        polymorph.set(std::stoi(value));
+      } catch (...) {
+      }
+      break;
     case COLLECTION:
-      collection.set(std::stoi(value));
+      try {
+        collection.set(std::stoi(value));
+      } catch (...) {
+      }
       break;
     case FIELD:
-      field.set(std::stoi(value));
+      try {
+        field.set(std::stoi(value));
+      } catch (...) {
+      }
       break;
     case OBJ_ID:
       objId.set(value);
@@ -1112,6 +1127,7 @@ void FileUpload::toDbFormat(bson::bob& builder) {
 
 
 void FileUpload::toCompactFormat(ostream& stream) {
+  if (polymorph.has) stream << S_POLYMORPH << DF << polymorph.value << DF;
   if (collection.has) stream << S_COLLECTION << DF << collection.value << DF;
   if (field.has) stream << S_FIELD << DF << field.value << DF;
   if (objId.has) stream << S_OBJ_ID << DF << objId.value << DF;

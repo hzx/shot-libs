@@ -406,10 +406,12 @@ public:
 
 class FileUpload: public shot::Model {
 public:
-  static int const COLLECTION = 2;
-  static int const FIELD = 3;
-  static int const OBJ_ID = 4;
+  static int const POLYMORPH = 2;
+  static int const COLLECTION = 3;
+  static int const FIELD = 4;
+  static int const OBJ_ID = 5;
 
+  static std::string const S_POLYMORPH;
   static std::string const S_COLLECTION;
   static std::string const S_FIELD;
   static std::string const S_OBJ_ID;
@@ -419,6 +421,7 @@ public:
   void toDbFormat(bson::bob& builder);
   void toCompactFormat(ostream& stream);
 
+  shot::Int polymorph;
   shot::Int collection;
   shot::Int field;
   shot::String objId;
