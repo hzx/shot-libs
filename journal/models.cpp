@@ -732,7 +732,8 @@ void Image::toCompactFormat(ostream& stream) {
 // for fullhd (2k) and 4k
 std::vector<int> const Gallery::THUMB_SIZES = {300,225, 600,450};
 // for fullhd (2k) and 4k
-std::vector<int> const Gallery::SIZES = {1920,1080, 3840,2160};
+std::vector<int> const Gallery::SIZES = {1280,720, 1920,1080, 2560,1440,
+  3840,2160};
 
 std::string const Gallery::S_IMAGES = std::to_string(Gallery::IMAGES);
 
@@ -1076,5 +1077,45 @@ void PagingSearch::toCompactFormat(ostream& stream) {
     (rightExists.value ? '1' : '0') << DF;
 
 }
+
+
+std::string const FileUpload::S_COLLECTION = std::to_string(FileUpload::COLLECTION);
+std::string const FileUpload::S_FIELD = std::to_string(FileUpload::FIELD);
+std::string const FileUpload::S_OBJ_ID = std::to_string(FileUpload::OBJ_ID);
+
+
+int FileUpload::fromDbFormat(bson::bo& obj) {
+  // skip implementation - not needed
+
+  return 0;
+}
+
+
+int FileUpload::parseField(int code, std::string const& value) {
+  switch (code) {
+    case COLLECTION:
+      collection.set(std::stoi(value));
+      break;
+    case FIELD:
+      field.set(std::stoi(value));
+      break;
+    case OBJ_ID:
+      objId.set(value);
+      break;
+  }
+}
+
+
+void FileUpload::toDbFormat(bson::bob& builder) {
+  // skip
+}
+
+
+void FileUpload::toCompactFormat(ostream& stream) {
+  if (collection.has) stream << S_COLLECTION << DF << collection.value << DF;
+  if (field.has) stream << S_FIELD << DF << field.value << DF;
+  if (objId.has) stream << S_OBJ_ID << DF << objId.value << DF;
+}
+
   
 } /* namespace journal */
