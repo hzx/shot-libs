@@ -1118,6 +1118,8 @@ int FileUpload::parseField(int code, std::string const& value) {
       objId.set(value);
       break;
   }
+
+  return 0;
 }
 
 
