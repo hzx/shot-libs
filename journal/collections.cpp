@@ -394,7 +394,20 @@ void ItemsCollection::removeImage(std::string& id) {
   remove(id);
 }
 
+void ItemsCollection::removeGallery(Gallery& gallery) {
+  for (auto& filename: gallery.images) {
+    removeGalleryImage(filename);
+  }
+}
+
 void ItemsCollection::removeGallery(std::string& id) {
+  bson::bo obj = db->conn.findOne(table, BSON(shot::S_ID << mongo::OID(id)));
+  if (obj.isEmpty()) return;
+
+  Gallery gallery;
+  gallery.fromDbFormat(obj);
+
+  removeGallery(gallery);
   remove(id);
 }
 
@@ -878,6 +891,8 @@ void ItemsCollection::uploadGalleryImage(std::string& id,
 void ItemsCollection::removeGalleryImage(std::string& filename) {
   std::string original = shot::Options::instance().imgDir + filename;
   if (!shot::pathExists(original.data())) return;
+
+  shot::rm(original);
 
   // remove thumbs
   size_t width, height;

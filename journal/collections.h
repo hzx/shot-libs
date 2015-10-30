@@ -70,6 +70,7 @@ public:
   void removeFile(std::string& id);
   void removeImage(Image& image);
   void removeImage(std::string& id);
+  void removeGallery(Gallery& gallery);
   void removeGallery(std::string& id);
   void removeBigSlider(std::string& id);
   void removeMiniSlider(std::string& id);
