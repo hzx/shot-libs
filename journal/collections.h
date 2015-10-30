@@ -2,6 +2,7 @@
 #define JOURNAL_COLLECTIONS_H
 
 #include "shot/DbClient.h"
+#include "shot/Request.h"
 #include "models.h"
 
 namespace journal {
@@ -65,7 +66,9 @@ public:
   void removeLink(std::string& id);
   void removeVideo(std::string& id);
   void removeGoogleMap(std::string& id);
+  void removeFile(File& file);
   void removeFile(std::string& id);
+  void removeImage(Image& image);
   void removeImage(std::string& id);
   void removeGallery(std::string& id);
   void removeBigSlider(std::string& id);
@@ -96,6 +99,21 @@ public:
 
   void updateItem(int nodeType, std::string& id, std::string& params,
       std::ostream& updates);
+
+  bool uploadFiles(FileUpload& fu, std::vector<shot::File>& files,
+      std::ostream& updates);
+
+  void uploadFile(std::string& id, std::string& filename, std::ostream& updates);
+  void uploadImage(std::string& id, std::string& filename, std::ostream& updates);
+  void uploadGalleryImage(std::string& id, std::vector<std::string>& filenames,
+      std::ostream& updates);
+  void removeGalleryImage(std::string& filename);
+  void removeGalleryImage(std::string& id, std::string& filename);
+  void moveGalleryImage(std::string& id, std::string& beforeId);
+  void uploadBigSliderImage(std::string& id,
+      std::vector<std::string>& filenames, std::ostream& updates);
+  void uploadMiniSliderImage(std::string& id,
+      std::vector<std::string>& filenames, std::ostream& updates);
 
   void append(Node& node, ostream& updates);
   void remove(string& id);
