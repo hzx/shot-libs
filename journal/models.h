@@ -315,10 +315,13 @@ public:
 class BigSlider: public Node {
 public:
   static int const IMAGES = 5;
+  static int const SIZE = 6;
 
   static std::string const S_IMAGES;
+  static std::string const S_SIZE;
 
   std::vector<std::string> images;
+  std::vector<int> size;
 
   BigSlider();
 
@@ -332,9 +335,12 @@ public:
 class MiniSlider: public Node {
 public:
   static int const IMAGES = 5;
+  static int const SIZE = 6;
 
   static std::string const S_IMAGES;
+  static std::string const S_SIZE;
 
+  std::vector<int> size;
   std::vector<std::string> images;
 
   MiniSlider();

@@ -797,6 +797,7 @@ void Gallery::toCompactFormat(ostream& stream) {
 
 
 std::string const BigSlider::S_IMAGES = std::to_string(BigSlider::IMAGES);
+std::string const BigSlider::S_SIZE = std::to_string(BigSlider::SIZE);
 
 
 BigSlider::BigSlider() {
@@ -810,6 +811,10 @@ int BigSlider::fromDbFormat(bson::bo& obj) {
   if (obj.hasField(S_IMAGES)) {
     std::string imgs = obj.getField(S_IMAGES).String();
     shot::split(imgs, ':', images);
+  }
+  if (obj.hasField(S_SIZE)) {
+    std::string s_size = obj.getField(S_SIZE).String();
+    shot::splitInts(s_size, size);
   }
 
   return 0;
@@ -829,6 +834,9 @@ int BigSlider::parseField(int code, std::string const& value) {
     case IMAGES:
       shot::split(const_cast<std::string&>(value), ':', images);
       break;
+    case SIZE:
+      shot::splitInts(value, size);
+      break;
   }
 
   return 0;
@@ -841,8 +849,11 @@ void BigSlider::toDbFormat(bson::bob& builder) {
   }
   if (pageId.has) builder << Node::S_PAGE_ID << mongo::OID(pageId.value);
   if (style.has) builder << Node::S_STYLE << style.value;
-  if (images.size() > 0) {
-    builder << BigSlider::S_IMAGES << shot::join(images, ':');
+  if (not images.empty()) {
+    builder << S_IMAGES << shot::join(images, ':');
+  }
+  if (not size.empty()) {
+    builder << S_SIZE << shot::join(size, ':');
   }
 }
 
@@ -851,13 +862,15 @@ void BigSlider::toCompactFormat(ostream& stream) {
   if (id.has) stream << shot::ID << DF << id.value << DF;
   if (pageId.has) stream << Node::S_PAGE_ID << DF << pageId.value << DF;
   if (style.has) stream << Node::S_STYLE << DF << style.value << DF;
-  if (images.size() > 0) {
-    stream << BigSlider::S_IMAGES << DF << shot::join(images, ':') << DF;
-  }
+  if (not images.empty())
+    stream << S_IMAGES << DF << shot::join(images, ':') << DF;
+  if (not size.empty())
+    stream << S_SIZE << DF << shot::join(size, ':') << DF;
 }
 
 
 std::string const MiniSlider::S_IMAGES = std::to_string(MiniSlider::IMAGES);
+std::string const MiniSlider::S_SIZE = std::to_string(MiniSlider::SIZE);
 
 
 MiniSlider::MiniSlider() {
@@ -871,6 +884,10 @@ int MiniSlider::fromDbFormat(bson::bo& obj) {
   if (obj.hasField(S_IMAGES)) {
     std::string imgs = obj.getField(S_IMAGES).String();
     shot::split(imgs, ':', images);
+  }
+  if (obj.hasField(S_SIZE)) {
+    std::strng s_size = obj.getField(S_SIZE).String();
+    shot::splitInts(s_size, size);
   }
 
   return 0;
@@ -890,6 +907,9 @@ int MiniSlider::parseField(int code, std::string const& value) {
     case IMAGES:
       shot::split(const_cast<std::string&>(value), ':', images);
       break;
+    case SIZE:
+      shot::splitInts(value, size);
+      break;
   }
 
   return 0;
@@ -902,8 +922,11 @@ void MiniSlider::toDbFormat(bson::bob& builder) {
   }
   if (pageId.has) builder << Node::S_PAGE_ID << mongo::OID(pageId.value);
   if (style.has) builder << Node::S_STYLE << style.value;
-  if (images.size() > 0) {
-    builder << MiniSlider::S_IMAGES << shot::join(images, ':');
+  if (not images.empty()) {
+    builder << S_IMAGES << shot::join(images, ':');
+  }
+  if (not size.empty()) {
+    builder << S_SIZE << shot::join(size, ':');
   }
 }
 
@@ -912,9 +935,10 @@ void MiniSlider::toCompactFormat(ostream& stream) {
   if (id.has) stream << shot::ID << DF << id.value << DF;
   if (pageId.has) stream << Node::S_PAGE_ID << DF << pageId.value << DF;
   if (style.has) stream << Node::S_STYLE << DF << style.value << DF;
-  if (images.size() > 0) {
+  if (not images.empty())
     stream << MiniSlider::S_IMAGES << DF << shot::join(images, ':') << DF;
-  }
+  if (not size.empty())
+    stream << S_SIZE << DF << shot::join(size, ':') << DF;
 }
 
 
