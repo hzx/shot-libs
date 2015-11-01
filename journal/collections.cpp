@@ -431,6 +431,15 @@ void ItemsCollection::removeBigSliderImage(std::string& filename,
         filename, width, height);
 
     shot::rm(im);
+
+    // remove 2x versions
+    width *= 2;
+    height *= 2;
+
+    std::string im2 = createFilename(shot::Options::instance().imgDir,
+        filename, width, height);
+
+    shot::rm(im2);
   }
 }
 
@@ -469,6 +478,15 @@ void ItemsCollection::removeMiniSliderImage(std::string& filename,
         filename, width, height);
 
     shot::rm(im);
+
+    // remove 2x versions
+    width *= 2;
+    height *= 2;
+
+    std::string im2 = createFilename(shot::Options::instance().imgDir,
+        filename, width, height);
+
+    shot::rm(im2);
   }
 }
 
@@ -1566,8 +1584,6 @@ void Collection::insertField(std::string& obj, std::string& beforeId,
 
   auto journal = get(parentId);
   if (journal.get() == nullptr) return;
-
-  // debug
 
   switch (static_cast<NodeType>(nodeType)) {
     case NodeType::None:
