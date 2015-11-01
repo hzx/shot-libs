@@ -353,9 +353,10 @@ void ItemsCollection::removeFile(std::string& id) {
 
 void ItemsCollection::removeImage(Image& image) {
   if (image.filename.has and !image.filename.value.empty()) {
-    std::string old = shot::Options::instance().imgDir + image.filename.value;
-    if (shot::pathExists(old.data())) {
-      shot::rm(old);
+    std::string original = shot::Options::instance().imgDir +
+      image.filename.value;
+    if (shot::pathExists(original.data())) {
+      shot::rm(original);
 
       // remove thumbs
       size_t width, height;
@@ -401,6 +402,8 @@ void ItemsCollection::removeGallery(Gallery& gallery) {
 }
 
 void ItemsCollection::removeGallery(std::string& id) {
+  if (id.length() != shot::OID_SIZE) return;
+
   bson::bo obj = db->conn.findOne(table, BSON(shot::S_ID << mongo::OID(id)));
   if (obj.isEmpty()) return;
 
@@ -411,11 +414,80 @@ void ItemsCollection::removeGallery(std::string& id) {
   remove(id);
 }
 
+
+void ItemsCollection::removeBigSliderImage(std::string& filename,
+    std::vector<int>& metrics) {
+  std::string original = shot::Options::instance().imgDir + filename;
+
+  shot::rm(original);
+
+  // remove images
+  size_t width, height;
+  for (size_t i = 0; i < metrics.size(); i += 2) {
+    width = metrics[i];
+    height = metrics[i+1];
+
+    std::string im = createFilename(shot::Options::instance().imgDir,
+        filename, width, height);
+
+    shot::rm(im);
+  }
+}
+
+void ItemsCollection::removeBigSlider(BigSlider& slider) {
+  for (auto& filename: slider.images) {
+    removeBigSliderImage(filename, slider.size);
+  }
+}
+
 void ItemsCollection::removeBigSlider(std::string& id) {
+  if (id.length() != shot::OID_SIZE) return;
+
+  bson::bo obj = db->conn.findOne(table, BSON(shot::S_ID << mongo::OID(id)));
+  if (obj.isEmpty()) return;
+
+  BigSlider slider;
+  slider.fromDbFormat(obj);
+
+  removeBigSlider(slider);
   remove(id);
 }
 
+void ItemsCollection::removeMiniSliderImage(std::string& filename,
+    std::vector<int>& metrics) {
+  std::string original = shot::Options::instance().imgDir + filename;
+
+  shot::rm(original);
+
+  // remove images
+  size_t width, height;
+  for (size_t i = 0; i < metrics.size(); i += 2) {
+    width = metrics[i];
+    height = metrics[i+1];
+
+    std::string im = createFilename(shot::Options::instance().imgDir,
+        filename, width, height);
+
+    shot::rm(im);
+  }
+}
+
+void ItemsCollection::removeMiniSlider(MiniSlider& slider) {
+  for (auto& filename: slider.images) {
+    removeMiniSliderImage(filename, slider.size);
+  }
+}
+
 void ItemsCollection::removeMiniSlider(std::string& id) {
+  if (id.length() != shot::OID_SIZE) return;
+
+  bson::bo obj = db->conn.findOne(table, BSON(shot::S_ID << mongo::OID(id)));
+  if (obj.isEmpty()) return;
+
+  MiniSlider slider;
+  slider.fromDbFormat(obj);
+
+  removeMiniSlider(slider);
   remove(id);
 }
 
@@ -949,11 +1021,117 @@ void ItemsCollection::moveGalleryImage(std::string& id, std::string& beforeId) {
 
 void ItemsCollection::uploadBigSliderImage(std::string& id,
     std::vector<std::string>& filenames, std::ostream& updates) {
+  if (id.length() != shot::OID_SIZE) return;
+
+  bson::bo obj = db->conn.findOne(table, BSON(shot::S_ID << mongo::OID(id)));
+  if (obj.isEmpty()) return;
+
+  BigSlider old;
+  old.fromDbFormat(obj);
+
+  BigSlider upd;
+  upd.images = old.images;
+
+  for (auto& filename: filenames) {
+    // move each file from tmp to img directory
+    std::string name = shot::getFilename(filename);
+    std::string original = shot::Options::instance().imgDir + name;
+
+    shot::copyFile(original, filename);
+    shot::rm(filename);
+
+    // create resized images
+    size_t width, height;
+    for (size_t i = 0; i < old.size.size(); i += 2) {
+      width = old.size[i];
+      height = old.size[i+1];
+
+      std::string im = createFilename(shot::Options::instance().imgDir,
+          name, width, height);
+
+      resizeThumb(im, original, width, height);
+
+      // create 2x versions
+      width *= 2;
+      height *= 2;
+
+      std::string im2 = createFilename(shot::Options::instance().imgDir,
+          name, width, height);
+
+      resizeThumb(im2, original, width, height);
+    }
+
+    upd.images.push_back(name);
+    updates << name << DF;
+  }
+
+  // update images in db
+  bson::bob builder;
+
+  upd.toDbFormat(builder);
+
+  db->conn.update(table,
+    BSON(shot::S_ID << mongo::OID(id)),
+    BSON("$set" << builder.obj())
+  );
 }
 
 
 void ItemsCollection::uploadMiniSliderImage(std::string& id,
     std::vector<std::string>& filenames, std::ostream& updates) {
+  if (id.length() != shot::OID_SIZE) return;
+
+  bson::bo obj = db->conn.findOne(table, BSON(shot::S_ID << mongo::OID(id)));
+  if (obj.isEmpty()) return;
+
+  MiniSlider old;
+  old.fromDbFormat(obj);
+
+  MiniSlider upd;
+  upd.images = old.images;
+
+  for (auto& filename: filenames) {
+    // move each file from tmp to img directory
+    std::string name = shot::getFilename(filename);
+    std::string original = shot::Options::instance().imgDir + name;
+
+    shot::copyFile(original, filename);
+    shot::rm(filename);
+
+    // create resized images
+    size_t width, height;
+    for (size_t i = 0; i < old.size.size(); i += 2) {
+      width = old.size[i];
+      height = old.size[i+1];
+
+      std::string im = createFilename(shot::Options::instance().imgDir,
+          name, width, height);
+
+      resizeThumb(im, original, width, height);
+
+      // create 2x versions
+      width *= 2;
+      height *= 2;
+
+      std::string im2 = createFilename(shot::Options::instance().imgDir,
+          name, width, height);
+
+      resizeThumb(im2, original, width, height);
+    }
+
+    upd.images.push_back(name);
+    updates << name << DF;
+  }
+
+  // update item in db
+  bson::bob builder;
+
+  upd.toDbFormat(builder);
+
+  db->conn.update(table,
+    BSON(shot::S_ID << mongo::OID(id)),
+    BSON("$set" << builder.obj())
+  );
 }
 
 

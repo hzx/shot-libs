@@ -72,7 +72,13 @@ public:
   void removeImage(std::string& id);
   void removeGallery(Gallery& gallery);
   void removeGallery(std::string& id);
+  void removeBigSliderImage(std::string& filename,
+    std::vector<int>& metrics);
+  void removeBigSlider(BigSlider& slider);
   void removeBigSlider(std::string& id);
+  void removeMiniSliderImage(std::string& filename,
+    std::vector<int>& metrics);
+  void removeMiniSlider(MiniSlider& slider);
   void removeMiniSlider(std::string& id);
   void removeAnchor(std::string& id);
   void removeBreak(std::string& id);

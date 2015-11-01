@@ -853,7 +853,7 @@ void BigSlider::toDbFormat(bson::bob& builder) {
     builder << S_IMAGES << shot::join(images, ':');
   }
   if (not size.empty()) {
-    builder << S_SIZE << shot::join(size, ':');
+    builder << S_SIZE << shot::join(size, 'x');
   }
 }
 
@@ -865,7 +865,7 @@ void BigSlider::toCompactFormat(ostream& stream) {
   if (not images.empty())
     stream << S_IMAGES << DF << shot::join(images, ':') << DF;
   if (not size.empty())
-    stream << S_SIZE << DF << shot::join(size, ':') << DF;
+    stream << S_SIZE << DF << shot::join(size, 'x') << DF;
 }
 
 
@@ -886,7 +886,7 @@ int MiniSlider::fromDbFormat(bson::bo& obj) {
     shot::split(imgs, ':', images);
   }
   if (obj.hasField(S_SIZE)) {
-    std::strng s_size = obj.getField(S_SIZE).String();
+    std::string s_size = obj.getField(S_SIZE).String();
     shot::splitInts(s_size, size);
   }
 
@@ -926,7 +926,7 @@ void MiniSlider::toDbFormat(bson::bob& builder) {
     builder << S_IMAGES << shot::join(images, ':');
   }
   if (not size.empty()) {
-    builder << S_SIZE << shot::join(size, ':');
+    builder << S_SIZE << shot::join(size, 'x');
   }
 }
 
@@ -938,7 +938,7 @@ void MiniSlider::toCompactFormat(ostream& stream) {
   if (not images.empty())
     stream << MiniSlider::S_IMAGES << DF << shot::join(images, ':') << DF;
   if (not size.empty())
-    stream << S_SIZE << DF << shot::join(size, ':') << DF;
+    stream << S_SIZE << DF << shot::join(size, 'x') << DF;
 }
 
 
