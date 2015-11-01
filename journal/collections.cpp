@@ -1049,6 +1049,7 @@ void ItemsCollection::uploadBigSliderImage(std::string& id,
       std::string im = createFilename(shot::Options::instance().imgDir,
           name, width, height);
 
+
       resizeThumb(im, original, width, height);
 
       // create 2x versions
@@ -1059,6 +1060,11 @@ void ItemsCollection::uploadBigSliderImage(std::string& id,
           name, width, height);
 
       resizeThumb(im2, original, width, height);
+
+      std::string thumb = createFilename(shot::Options::instance().imgDir,
+          name, 300, 225);
+
+      resizeThumb(thumb, original, 300, 225);
     }
 
     upd.images.push_back(name);
