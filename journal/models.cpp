@@ -516,6 +516,7 @@ void Video::toCompactFormat(ostream& stream) {
 std::string const GoogleMap::S_ZOOM = std::to_string(GoogleMap::ZOOM);
 std::string const GoogleMap::S_LAT = std::to_string(GoogleMap::LAT);
 std::string const GoogleMap::S_LNG = std::to_string(GoogleMap::LNG);
+std::string const GoogleMap::S_ICON = std::to_string(GoogleMap::ICON);
 
 
 GoogleMap::GoogleMap() {
@@ -529,6 +530,7 @@ int GoogleMap::fromDbFormat(bson::bo& obj) {
   if (obj.hasField(S_ZOOM)) zoom.set(obj.getField(S_ZOOM).Int());
   if (obj.hasField(S_LAT)) lat.set(obj.getField(S_LAT).Double());
   if (obj.hasField(S_LNG)) lng.set(obj.getField(S_LNG).Double());
+  if (obj.hasField(S_ICON)) icon.set(obj.getField(S_ICON).String());
 
   return 0;
 }
@@ -568,6 +570,9 @@ int GoogleMap::parseField(int code, std::string const& value) {
         }
       }
       break;
+    case ICON:
+      icon.set(value);
+      break;
   }
 
   return 0;
@@ -583,6 +588,7 @@ void GoogleMap::toDbFormat(bson::bob& builder) {
   if (zoom.has) builder << S_ZOOM << zoom.value;
   if (lat.has) builder << S_LAT << lat.value;
   if (lng.has) builder << S_LNG << lng.value;
+  if (icon.has) builder << S_ICON << icon.value;
 }
 
 void GoogleMap::toCompactFormat(ostream& stream) {
@@ -593,6 +599,7 @@ void GoogleMap::toCompactFormat(ostream& stream) {
   if (zoom.has) stream << S_ZOOM << DF << zoom.value << DF;
   if (lat.has) stream << S_LAT << DF << lat.value << DF;
   if (lng.has) stream << S_LNG << DF << lng.value << DF;
+  if (icon.has) stream << S_ICON << DF << icon.value << DF;
 }
 
 

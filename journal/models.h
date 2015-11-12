@@ -227,15 +227,17 @@ public:
   static int const ZOOM = 5;
   static int const LAT = 6;
   static int const LNG = 7;
+  static int const ICON = 8;
 
   static std::string const S_ZOOM;
   static std::string const S_LAT;
   static std::string const S_LNG;
+  static std::string const S_ICON;
 
   shot::Int zoom;
   shot::Float lat;
   shot::Float lng;
-  /* shot::String icon; */
+  shot::String icon;
   
   GoogleMap();
 
