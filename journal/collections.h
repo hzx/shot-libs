@@ -65,6 +65,7 @@ public:
   void removeCode(std::string& id);
   void removeLink(std::string& id);
   void removeVideo(std::string& id);
+  void removeGoogleMap(GoogleMap& map);
   void removeGoogleMap(std::string& id);
   void removeFile(File& file);
   void removeFile(std::string& id);
@@ -110,6 +111,7 @@ public:
   bool uploadFiles(FileUpload& fu, std::vector<shot::File>& files,
       std::ostream& updates);
 
+  void uploadGoogleMapIcon(std::string& id, std::string& filename, std::ostream& updates);
   void uploadFile(std::string& id, std::string& filename, std::ostream& updates);
   void uploadImage(std::string& id, std::string& filename, std::ostream& updates);
   void uploadGalleryImage(std::string& id, std::vector<std::string>& filenames,

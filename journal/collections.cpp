@@ -326,7 +326,25 @@ void ItemsCollection::removeVideo(std::string& id) {
   remove(id);
 }
 
+
+void ItemsCollection::removeGoogleMap(GoogleMap& map) {
+  if (!map.icon.has or map.icon.value.empty()) return;
+
+  std::string old = shot::Options::instance().imgDir + map.icon.value;
+
+  if (shot::pathExists(old.data())) {
+    shot::rm(old);
+  }
+}
+
 void ItemsCollection::removeGoogleMap(std::string& id) {
+  bson::bo obj = db->conn.findOne(table, BSON(shot::S_ID << mongo::OID(id)));
+  if (obj.isEmpty()) return;
+
+  GoogleMap map;
+  map.fromDbFormat(obj);
+
+  removeGoogleMap(map);
   remove(id);
 }
 
@@ -768,6 +786,12 @@ void ItemsCollection::updateItem(int nodeType, std::string& id,
 bool ItemsCollection::uploadFiles(FileUpload& fu,
     std::vector<shot::File>& files, std::ostream& updates) {
   switch (static_cast<NodeType>(fu.polymorph.value)) {
+    case NodeType::GoogleMap:
+      {
+        std::string filename = files[0].path;
+        uploadGoogleMapIcon(fu.objId.value, filename, updates);
+      }
+      return true;
     case NodeType::File:
       {
         std::string filename = files[0].path;
@@ -812,6 +836,43 @@ bool ItemsCollection::uploadFiles(FileUpload& fu,
   return false;
 }
 
+void ItemsCollection::uploadGoogleMapIcon(std::string& id,
+    std::string& filename, std::ostream& updates) {
+  if (id.length() != shot::OID_SIZE) return;
+
+  bson::bo obj = db->conn.findOne(table, BSON(shot::S_ID << mongo::OID(id)));
+  if (obj.isEmpty()) return;
+
+  GoogleMap map;
+  map.fromDbFormat(obj);
+
+  // remove old file
+  removeGoogleMap(map);
+
+  std::string name = shot::getFilename(filename);
+
+  // move file from tmp to data directory
+  if (shot::pathExists(filename.data())) {
+    std::string dest = shot::Options::instance().imgDir + name;
+    /* shot::moveFile(dest, filename); */
+    shot::copyFile(dest, filename);
+    shot::rm(filename);
+  }
+
+  // update item in db
+  GoogleMap upd;
+  bson::bob builder;
+
+  upd.icon.set(name);
+  upd.toDbFormat(builder);
+
+  db->conn.update(table,
+    BSON(shot::S_ID << mongo::OID(id)),
+    BSON("$set" << builder.obj())
+  );
+
+  updates << name << DF;
+}
 
 void ItemsCollection::uploadFile(std::string& id, std::string& filename,
     std::ostream& updates) {
@@ -825,10 +886,6 @@ void ItemsCollection::uploadFile(std::string& id, std::string& filename,
 
   // remove old file
   removeFile(file);
-  /* if (file.filename.has and !file.filename.value.empty()) { */
-  /*   std::string old = shot::Options::instance().dataDir + file.filename.value; */
-  /*   if (shot::pathExists(old.data())) shot::rm(old); */
-  /* } */
 
   std::string name = shot::getFilename(filename);
 
